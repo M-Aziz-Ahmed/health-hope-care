@@ -21,79 +21,66 @@ const services = [
     title: 'Injection at Home',
     description: 'Safe and professional injection services provided at your doorstep.',
     icon: Syringe,
-    price: 1000,
   },
   {
     title: 'Infusion & Drips',
     description: 'IV infusions and drips administered by experienced nurses at home.',
     icon: Droplet,
-    price: 2500,
   },
   {
     title: 'Wound Dressing',
     description: 'Sterile and hygienic dressing for wounds and injuries.',
     icon: Bandage,
-    price: 1200,
   },
   {
     title: 'NG Tube Feeding',
     description: 'Nasogastric tube insertion and feeding for patients in need.',
     icon: Thermometer,
-    price: 2000,
   },
   {
     title: 'Foley Catheterization',
     description: 'Urinary catheterization services provided in the comfort of home.',
     icon: UserPlus,
-    price: 1800,
   },
   {
     title: 'ECG at Home',
     description: 'Electrocardiogram testing without leaving your house.',
     icon: HeartPulse,
-    price: 1500,
   },
   {
     title: 'X-Ray & Ultrasound',
     description: 'On-site radiology services including X-rays and ultrasounds.',
     icon: X,
-    price: 3000,
   },
   {
     title: 'Physiotherapy',
     description: 'Rehabilitation and physiotherapy plans tailored to your needs.',
     icon: Bone,
-    price: 2000,
   },
   {
     title: 'Doctor Visit at Home',
     description: 'General physician and specialist visits at your home.',
     icon: Stethoscope,
-    price: 2500,
   },
   {
     title: 'Home Nursing Care',
     description: 'Full-time or part-time nursing care for elderly or chronically ill patients.',
     icon: Hospital,
-    price: 5000,
   },
   {
     title: 'Medicine Delivery',
     description: 'Prompt delivery of prescribed medicines to your home.',
     icon: Baby,
-    price: 300,
   },
   {
     title: 'Lab Test Sampling',
     description: 'Sample collection for lab tests done at your home.',
     icon: Hospital,
-    price: 800,
   },
   {
     title: 'Counselling & Rehab',
     description: 'Mental health counselling and addiction rehabilitation support.',
     icon: HeartPulse,
-    price: 2200,
   },
 ];
 
@@ -128,7 +115,9 @@ export default function ServicesPage() {
                     </div>
                     <h3 className="text-xl font-semibold text-blue-500">{service.title}</h3>
                     <p className="mt-2 text-gray-600 text-sm">{service.description}</p>
-                    <p className="mt-2 text-blue-500 font-semibold">Price: Rs. {service.price}</p>
+                    <p className="mt-2 text-blue-500 font-semibold">
+                      Book Now &rarr;
+                    </p>
                   </div>
                 </Link>
               );
