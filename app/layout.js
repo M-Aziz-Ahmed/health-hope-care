@@ -9,8 +9,8 @@ const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
 
 export const metadata = {
-  title: 'Hope Health Care',
-  description: 'Providing home healthcare services with care and compassion',
+  title: 'Health Hope Care',
+  description: 'Providing home health care services with care and compassion',
 };
 
 export default function RootLayout({ children }) {
