@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -27,9 +28,9 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/', label: 'About Us' },
+    { href: '/about', label: 'About Us' },
     { href: '/services', label: 'Services' },
-    { href: '/', label: 'Blogs' },
+    // { href: '/', label: 'Blogs' },
     { href: '/contact', label: 'Contact Us' },
   ];
 
@@ -37,7 +38,9 @@ export default function Navbar() {
     <nav className="bg-blue-400 text-white shadow-md transition-all duration-300">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-4">
         <h1 className="text-2xl font-bold tracking-wide">
-          <span className="">Health Hope Care</span>
+          <Link href={'/'}>
+            <Image src={'/logo.png'} alt="Logo" width={200} height={200} className='inline mr-2 w-30' />
+          </Link>
         </h1>
         <div className="md:hidden cursor-pointer" onClick={() => setOpen(!open)}>
           {open ? <X size={28} /> : <Menu size={28} />}
@@ -75,15 +78,16 @@ export default function Navbar() {
               </Link>
             )}
           </li> */}
-          <li>
-            <Link href={'/booking'} className='bg-blue-600 p-2 rounded-xl px-6 text-md hover:bg-blue-800 transition-all duration-300'>Appointment</Link>
-          </li>
-        </ul> 
+
+        </ul>
+        <div className="hidden md:block">
+          <Link href={'/booking'} className='bg-white p-2 rounded-xl px-6 text-blue-400 font-bold hover:bg-blue-500 hover:text-white transition-all duration-300'>Appointment</Link>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {open && (
-        <ul className="md:hidden bg-emerald-600 px-4 py-2 space-y-2">
+        <ul className="md:hidden bg-blue-500 px-4 py-2 space-y-2">
           {navLinks.map(({ href, label }) => (
             <li key={href}>
               <Link
