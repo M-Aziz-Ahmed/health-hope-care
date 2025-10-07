@@ -69,7 +69,7 @@ export default function BookingPage() {
             transition={{ duration: 0.9 }}
         >
             <div className="bg-gradient-to-br from-emerald-50 to-sky-100 min-h-screen py-16 px-4">
-                <div className="w-170 mx-auto bg-white shadow-md rounded-xl p-8">
+                <div className="md:mx-20 lg:mx-auto lg:w-[50%] bg-white shadow-md rounded-xl p-8">
                     <h2 className="text-3xl font-bold text-blue-500 mb-6 text-center">
                         Book a Home Healthcare Service
                     </h2>
@@ -85,7 +85,7 @@ export default function BookingPage() {
                                 required
                                 onChange={handleChange}
                                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                                placeholder="John Doe"
+                                placeholder=""
                             />
                         </div>
 
@@ -99,7 +99,7 @@ export default function BookingPage() {
                                 required
                                 onChange={handleChange}
                                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                                placeholder="john@example.com"
+                                placeholder=""
                             />
                         </div>
 
@@ -113,7 +113,7 @@ export default function BookingPage() {
                                 required
                                 onChange={handleChange}
                                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                                placeholder="+92 300 1234567"
+                                placeholder=""
                             />
                         </div>
 
@@ -127,7 +127,7 @@ export default function BookingPage() {
                                 required
                                 onChange={handleChange}
                                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                                placeholder="House #, Street, City"
+                                placeholder=""
                             />
                         </div>
 

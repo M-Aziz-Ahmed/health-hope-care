@@ -100,28 +100,26 @@ export default function ServicesPage() {
             Explore the healthcare services we offer to help you and your family stay healthy.
           </p>
 
-          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((service, idx) => {
-              const Icon = service.icon;
-              return (
-                <Link
-                  key={idx}
-                  href={`/booking?service=${encodeURIComponent(service.title)}`}
-                  className="block"
-                >
-                  <div className="cursor-pointer bg-white shadow-md rounded-xl p-6 hover:shadow-xl hover:scale-[1.02] transition duration-300">
-                    <div className="mb-4">
-                      <Icon size={32} className="text-blue-600" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-blue-500">{service.title}</h3>
-                    <p className="mt-2 text-gray-600 text-sm">{service.description}</p>
-                    <p className="mt-2 text-blue-500 font-semibold">
-                      Book Now &rarr;
+          <div className="flex flex-wrap gap-5">
+            {services.map((card, index) => (
+              <div className="group relative cursor-pointer overflow-hidden bg-white px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:mx-auto sm:max-w-sm sm:rounded-lg sm:px-10 text-blue-600] hover:text-white" key={card.title}>
+                <span className="absolute left-10 top-10 z-0 h-20 w-20 rounded-full bg-blue-400  transition-all duration-300 group-hover:scale-[10]"></span>
+                <div className="relative z-10 mx-auto max-w-md">
+                  <span className="grid h-20 w-20 place-items-center rounded-full bg-[#FEF1F2] group-hover:bg-white transition-all duration-300 border-[1px] border-blue-400 text-blue-400 hover:border-white hover:text-white">
+                    <card.icon size={50} className="text" />
+                  </span>
+
+                  <div className="text-3xl font-bold my-3  text-blue-400 transition-all duration-300 group-hover:text-white/90">
+                    {card.title}
+                  </div>
+                  <div className="text-base leading-7 text-gray-600 transition-all duration-300 group-hover:text-white/90">
+                    <p>
+                      {card.description}
                     </p>
                   </div>
-                </Link>
-              );
-            })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </motion.div >

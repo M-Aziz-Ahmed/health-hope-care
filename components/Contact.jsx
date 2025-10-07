@@ -69,7 +69,7 @@ export default function BookingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7 }}
             >
-                <div className="w-170 mx-auto bg-white shadow-md rounded-xl p-8">
+                <div className="md:mx-20 lg:mx-auto lg:w-[50%] bg-white shadow-md rounded-xl p-8">
 
                     <h2 className="text-3xl font-bold text-blue-500 mb-6 text-center">
                         Book a Home Healthcare Service

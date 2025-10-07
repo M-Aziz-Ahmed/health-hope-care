@@ -31,13 +31,13 @@ export default function Footer() {
           <h3 className="text-xl font-semibold mb-3">Contact Us</h3>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2">
-              <Phone size={16} /> +92 300 1234567
+              <Phone size={16} /> +92 329 0812133
             </li>
             <li className="flex items-center gap-2">
-              <Mail size={16} /> contact@hopehealth.com
+              <Mail size={16} /> healthhopecare24by7@gmail.com
             </li>
             <li className="flex items-center gap-2">
-              <MapPin size={16} /> Lahore, Pakistan
+              <MapPin size={22} /> Address: 1st floor, Akbar Chowk, Umer Plaza, College Road, Township Lahore, 54000
             </li>
           </ul>
         </div>
@@ -45,7 +45,7 @@ export default function Footer() {
 
       {/* Bottom Footer */}
       <div className="mt-10 border-t border-blue-700 pt-4 text-center text-sm text-gray-100">
-        © {new Date().getFullYear()} Hope Health Care. All rights reserved.
+       © {new Date().getFullYear()} All rights reserved By Health Hope Care.
       </div>
     </footer>
   );
