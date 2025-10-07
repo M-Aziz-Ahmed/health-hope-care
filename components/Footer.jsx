@@ -9,7 +9,7 @@ export default function Footer() {
 
         {/* Brand Info */}
         <div>
-          <h2 className="text-2xl font-bold mb-3">Hope Health Care</h2>
+          <h2 className="text-2xl font-bold mb-3">Health Hope Care</h2>
           <p className="text-sm text-gray-100">
             Providing compassionate and professional healthcare services for every stage of life.
           </p>

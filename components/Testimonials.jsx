@@ -7,7 +7,7 @@ const testimonials = [
     name: 'Ali Raza',
     location: 'Lahore',
     review:
-      'Hope Health Care provided amazing home nursing service. The staff was polite, punctual, and extremely professional!',
+      'Health Hope Care provided amazing home nursing service. The staff was polite, punctual, and extremely professional!',
     rating: 5,
   },
   {
@@ -28,7 +28,7 @@ const testimonials = [
     name: 'Saba Khan',
     location: 'Lahore',
     review:
-      'I had a great experience with Hope Health Care. The staff was friendly and helpful. Highly recommended!',
+      'I had a great experience with Health Hope Care. The staff was friendly and helpful. Highly recommended!',
     rating: 4,
   }
 ];

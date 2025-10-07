@@ -14,7 +14,7 @@ export default function AboutPage() {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-4xl md:text-5xl font-extrabold text-blue-500 leading-tight">
-            Welcome to <span className="text-sky-600">Hope Health Care</span>
+            Welcome to <span className="text-sky-600">Health Hope Care</span>
           </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
             Delivering trusted healthcare services with{' '}
@@ -52,7 +52,7 @@ export default function AboutPage() {
           >
             <h2 className="text-3xl font-bold text-blue-800 mb-4">Our Mission</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              At <strong>Hope Health Care</strong>, we strive to make quality healthcare accessible right at your doorstep.
+              At <strong>Health Hope Care</strong>, we strive to make quality healthcare accessible right at your doorstep.
               Whether it's elderly care, diagnostic services, or urgent nursing needs — we deliver care that comforts, heals, and empowers.
             </p>
 
