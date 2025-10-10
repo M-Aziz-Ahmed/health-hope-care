@@ -21,7 +21,16 @@ export async function POST(request) {
     // Don't send password back
     const { password: _, ...userData } = user._doc;
 
-    return NextResponse.json(userData, { status: 200 });
+    // Set userId cookie for authentication
+    const response = NextResponse.json(userData, { status: 200 });
+    response.cookies.set('userId', user._id.toString(), {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      // secure: true, // Uncomment if using HTTPS
+      maxAge: 60 * 60 * 24 * 7 // 1 week
+    });
+    return response;
 
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

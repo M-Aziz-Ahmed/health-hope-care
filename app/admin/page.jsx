@@ -1,37 +1,59 @@
 'use client';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Plus, CalendarCheck2, ShieldCheck, LogOut, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+  Plus,
+  CalendarCheck2,
+  Users,
+} from 'lucide-react';
 
 export default function AdminDashboard() {
-  const [isAdmin, setIsAdmin] = useState(true);
-  const [adminName, setAdminName] = useState('');
   const [users, setUsers] = useState([]);
+  const [adminName, setAdminName] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const router = useRouter();
 
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    async function checkAdmin() {
+      try {
+        const res = await fetch('/api/current-user', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const user = await res.json();
+        if (!user || user.role !== 'admin') {
+          router.push('/login');
+          return;
+        }
+        setAdminName(user.name);
+        fetchUsers();
+      } catch (err) {
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    if (currentUser?.role === 'admin') {
-      setIsAdmin(true);
-      setAdminName(currentUser.name || 'Admin');
-      setUsers(storedUsers);
-     } else {
-    //   window.location.href = '/login';
-     }
-  }, []);
+    async function fetchUsers() {
+      try {
+        const res = await fetch('/api/fetchUser');
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error('Failed to fetch users');
+      }
+    }
 
-  const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    window.location.href = '/login';
-  };
+    checkAdmin();
+  }, [router]);
 
-  if (!isAdmin) return null;
+  if (loading) return <div className="p-8 text-center">Checking admin access...</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-sky-100 py-12 px-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-emerald-800 mb-2">Welcome, {adminName} 👋</h1>
           <p className="text-gray-600 text-lg">Here is your admin dashboard</p>
@@ -39,7 +61,6 @@ export default function AdminDashboard() {
 
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {/* Add New Service */}
           <Link href="/admin/add-service">
             <div className="bg-white border hover:shadow-lg p-6 rounded-xl flex items-start gap-4">
               <div className="bg-emerald-100 p-2 rounded-full">
@@ -52,7 +73,6 @@ export default function AdminDashboard() {
             </div>
           </Link>
 
-          {/* Manage Bookings */}
           <Link href="/admin/bookings">
             <div className="bg-white border hover:shadow-lg p-6 rounded-xl flex items-start gap-4">
               <div className="bg-emerald-100 p-2 rounded-full">
@@ -65,7 +85,6 @@ export default function AdminDashboard() {
             </div>
           </Link>
 
-          {/* Total Users */}
           <div className="bg-white border p-6 rounded-xl flex items-start gap-4">
             <div className="bg-emerald-100 p-2 rounded-full">
               <Users className="text-emerald-600" size={28} />
@@ -77,7 +96,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* User Info Table */}
+        {/* Users Table */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <h2 className="text-xl font-semibold text-emerald-700 mb-4">Registered User Info</h2>
           {users.length === 0 ? (
@@ -110,8 +129,6 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
-
-        
       </div>
     </div>
   );
