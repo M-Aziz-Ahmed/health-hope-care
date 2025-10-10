@@ -21,11 +21,9 @@ export default function BookingPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    contactNumber: '',
+    phone: '',
     address: '',
     service: '',
-    date: '',
-    time: '',
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -42,23 +40,31 @@ export default function BookingPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!isLoggedIn) {
-      window.location.href = '/login';
-      return;
-    }
+    try {
+      fetch('/api/createbooking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      }).then(res => {
+        if (res.ok) {
+          alert('✅ Booking successful! We will contact you soon.');
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            address: '',
+            service: '',
+          });
+        } else {
+          alert('❌ Failed to submit booking. Please try again later.');
+        }
+      });
+    } catch (error) {}
+  } 
 
-    console.log('✅ Booking Submitted:', formData);
-    alert('✅ Your booking has been submitted!');
-    setFormData({
-      name: '',
-      email: '',
-      contactNumber: '',
-      address: '',
-      service: '',
-      date: '',
-      time: '',
-    });
-  };
+
+
+  console.log('✅ Booking Submitted:', formData);
 
   return (
     <div className="bg-gradient-to-br from-emerald-50 to-sky-100 min-h-screen py-16 px-4">
@@ -101,8 +107,8 @@ export default function BookingPage() {
             <label className="block text-sm font-medium text-gray-700">Contact Number</label>
             <input
               type="text"
-              name="contactNumber"
-              value={formData.contactNumber}
+              name="phone"
+              value={formData.phone}
               required
               onChange={handleChange}
               className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"

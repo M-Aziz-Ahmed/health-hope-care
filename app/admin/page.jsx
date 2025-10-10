@@ -26,27 +26,6 @@ export default function AdminDashboard() {
     window.location.href = '/login';
   };
 
- async function CreateUser(params) {
-    try {
-        const response = await fetch('/api/createUser', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: 'Test User',
-                email: '',
-                password: 'test123',
-                role: 'admin'
-            })
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Failed to create user');
-        alert('✅ User created successfully');
-    } catch (error) {
-        alert(`❌ ${error.message}`);
-    }
-  
- }
-
   if (!isAdmin) return null;
 
   return (
@@ -56,7 +35,6 @@ export default function AdminDashboard() {
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-emerald-800 mb-2">Welcome, {adminName} 👋</h1>
           <p className="text-gray-600 text-lg">Here is your admin dashboard</p>
-          <button className='bg-blue-400 p-2 rounded ' onClick={CreateUser}>Create A User</button>
         </div>
 
         {/* Dashboard Cards */}

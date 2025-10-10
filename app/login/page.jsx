@@ -7,6 +7,46 @@ export default function AuthPage() {
   const [error, setError] = useState('');
 
   // ✅ Automatically add default admin on first load
+  async function LoginUser(params) {
+    try {
+      const response = await fetch('/api/loginUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(`❌ ${result.error}`);
+        return;
+      }
+
+      localStorage.setItem('currentUser', JSON.stringify(result));
+      alert(`✅ Welcome, ${result.role === 'admin' ? 'Admin' : result.name}!`);
+      window.location.href = result.role === 'admin' ? '/admin' : '/';
+
+    } catch (err) {
+      setError('❌ Failed to login. Try again later.');
+    }
+  }
+
+   async function CreateUser(params) {
+      try {
+          const response = await fetch('/api/createUser', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData)
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'Failed to create user');
+          alert('✅ User created successfully');
+      } catch (error) {
+          alert(`❌ ${error.message}`);
+      }
+    
+   }
+
   useEffect(() => {
     const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
     const adminExists = existingUsers.some(user => user.email === 'admin@gmail.com');
@@ -33,37 +73,6 @@ export default function AuthPage() {
     setError('');
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-
-    if (isLogin) {
-      const found = users.find(
-        (user) =>
-          user.email === formData.email && user.password === formData.password
-      );
-
-      if (found) {
-        localStorage.setItem('currentUser', JSON.stringify(found));
-        alert(`✅ Welcome, ${found.role === 'admin' ? 'Admin' : found.name}!`);
-        window.location.href = found.role === 'admin' ? '/admin' : '/';
-      } else {
-        setError('❌ Incorrect email or password');
-      }
-    } else {
-      const userExists = users.some((u) => u.email === formData.email);
-      if (userExists) {
-        setError('❌ Email already registered');
-        return;
-      }
-
-      const newUser = { ...formData, role: 'user' };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      alert('✅ Account created! Now you can login.');
-      setIsLogin(true);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-emerald-50 flex items-center justify-center px-4 py-12">
@@ -78,7 +87,7 @@ export default function AuthPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form className="space-y-5">
           {!isLogin && (
             <div>
               <label className="block text-sm text-gray-700">Full Name</label>
@@ -121,7 +130,8 @@ export default function AuthPage() {
           </div>
 
           <button
-            type="submit"
+            type="button"
+            onClick={isLogin ? LoginUser : CreateUser}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 font-semibold rounded-md transition duration-300"
           >
             {isLogin ? 'Login' : 'Sign Up'}
