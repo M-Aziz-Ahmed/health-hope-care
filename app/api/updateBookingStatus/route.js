@@ -1,5 +1,7 @@
 import { connectDB } from '@/lib/db';
 import Booking from '@/models/booking';
+import Notification from '@/models/Notification';
+import User from '@/models/Users';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
@@ -17,6 +19,19 @@ export async function POST(request) {
 
     booking.status = status;
     await booking.save();
+
+    // Notify assigned staff when status changes, otherwise notify admins
+    try {
+      if (booking.assignedStaff) {
+        await Notification.create({ to: booking.assignedStaff, message: `Booking ${booking._id} status changed to ${status}`, booking: booking._id });
+      } else {
+        const admins = await User.find({ role: { $in: ['admin', 'owner'] } }).select('_id');
+        const notifications = admins.map(a => ({ to: a._id, message: `Booking ${booking._id} status changed to ${status}`, booking: booking._id }));
+        if (notifications.length) await Notification.insertMany(notifications);
+      }
+    } catch (notifyErr) {
+      console.error('Failed creating notifications on status change', notifyErr);
+    }
 
     return NextResponse.json({ success: true, booking }, { status: 200 });
   } catch (error) {
