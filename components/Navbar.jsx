@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Menu, X, Bell } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 
 export default function Navbar() {
@@ -9,6 +9,10 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotes, setShowNotes] = useState(false);
+  const notesRef = useRef();
 
   useEffect(() => {
     let user = null;
@@ -24,6 +28,36 @@ export default function Navbar() {
       setIsAdmin(user.role === 'admin' || user.role === 'owner');
       setIsStaff(user.role === 'staff');
     }
+  }, []);
+
+  // fetch notifications for logged-in users
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let mounted = true;
+    async function loadNotes() {
+      try {
+        const res = await fetch('/api/notifications');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.read).length);
+      } catch (err) {
+        console.error('Failed to load notifications', err);
+      }
+    }
+    loadNotes();
+    const id = setInterval(loadNotes, 30000); // refresh every 30s
+    return () => { mounted = false; clearInterval(id); };
+  }, [isLoggedIn]);
+
+  // close dropdown when clicking outside
+  useEffect(() => {
+    function onDoc(e) {
+      if (notesRef.current && !notesRef.current.contains(e.target)) setShowNotes(false);
+    }
+    document.addEventListener('click', onDoc);
+    return () => document.removeEventListener('click', onDoc);
   }, []);
 
   const handleLogout = () => {
@@ -99,8 +133,51 @@ export default function Navbar() {
 
         </ul>
         <div className="hidden md:block">
-          <Link href={'/booking'} className='bg-white p-2 rounded-xl px-6 text-blue-400 font-bold hover:bg-blue-500 hover:text-white transition-all duration-300'>Appointment</Link>
-          {isStaff && <span className="ml-3 text-sm text-white/90">Staff</span>}
+          <div className="flex items-center gap-4">
+            <Link href={'/booking'} className='bg-white p-2 rounded-xl px-6 text-blue-400 font-bold hover:bg-blue-500 hover:text-white transition-all duration-300'>Appointment</Link>
+            {isStaff && <span className="ml-3 text-sm text-white/90">Staff</span>}
+
+            {/* Notification bell */}
+            <div className="relative" ref={notesRef}>
+              <button onClick={() => setShowNotes(s => !s)} className="p-2 rounded-full hover:bg-white/10">
+                <Bell className="text-white" size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">{unreadCount}</span>
+                )}
+              </button>
+
+              {showNotes && (
+                <div className="absolute right-0 mt-2 w-96 bg-white text-black rounded-lg shadow-lg overflow-hidden z-50">
+                  <div className="p-3 border-b font-medium">Notifications</div>
+                  <div className="max-h-80 overflow-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-3 text-sm text-gray-600">No notifications</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n._id} className={`p-3 border-b flex justify-between items-start ${n.read ? '' : 'bg-emerald-50'}`}>
+                          <div className="mr-3">
+                            <div className="text-sm">{n.message}</div>
+                            {n.booking && <div className="text-xs text-gray-500">Booking: {n.booking._id}</div>}
+                            <div className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleString()}</div>
+                          </div>
+                          <div>
+                            {!n.read && <button onClick={async () => {
+                              await fetch('/api/notifications/markRead', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: n._id })});
+                              setNotifications(prev => prev.map(x => x._id === n._id ? { ...x, read: true } : x));
+                              setUnreadCount(c => Math.max(0, c - 1));
+                            }} className="text-xs text-blue-600">Mark</button>}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div className="p-2 text-center border-t">
+                    <Link href="/notifications" className="text-sm text-blue-600">View all</Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

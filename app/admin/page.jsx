@@ -54,6 +54,9 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-sky-100 py-12 px-6">
       <div className="max-w-7xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <SendNotification users={users} />
+        </div>
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-emerald-800 mb-2">Welcome, {adminName} 👋</h1>
           <p className="text-gray-600 text-lg">Here is your admin dashboard</p>
@@ -174,6 +177,76 @@ function RoleControls({ user, onRoleChange }) {
     <div className="flex gap-2">
       <button disabled={loading} onClick={() => changeRole('admin')} className="px-2 py-1 bg-emerald-600 text-white rounded text-sm">Make Admin</button>
       <button disabled={loading} onClick={() => changeRole('user')} className="px-2 py-1 bg-gray-400 text-white rounded text-sm">Make User</button>
+    </div>
+  );
+}
+
+function SendNotification({ users }) {
+  const [open, setOpen] = useState(false);
+  const [target, setTarget] = useState('all');
+  const [recipients, setRecipients] = useState(''); // comma-separated emails
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const send = async () => {
+    if (!message.trim()) return alert('Message required');
+    setSending(true);
+    try {
+      let userIds = [];
+      if (target === 'one' || target === 'some') {
+        const emails = recipients.split(',').map(s => s.trim()).filter(Boolean);
+        const matched = users.filter(u => emails.includes(u.email));
+        if (matched.length === 0) return alert('No matching users found for given emails');
+        userIds = matched.map(m => m._id || m.id);
+      }
+
+      const body = { target, users: userIds, message };
+      const res = await fetch('/api/sendNotification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error('Send failed');
+      alert('Notification sent');
+      setOpen(false);
+      setMessage('');
+      setRecipients('');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send notification');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={() => setOpen(true)} className="bg-blue-600 text-white px-4 py-2 rounded-md">Send Notification</button>
+      {open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-3">Send Notification</h3>
+            <div className="mb-2">
+              <label className="block text-sm">Target</label>
+              <select value={target} onChange={e => setTarget(e.target.value)} className="w-full mt-1 p-2 border rounded">
+                <option value="all">All users</option>
+                <option value="one">One user (email)</option>
+                <option value="some">Some users (emails comma-separated)</option>
+              </select>
+            </div>
+            {(target === 'one' || target === 'some') && (
+              <div className="mb-2">
+                <label className="block text-sm">Recipient emails</label>
+                <input value={recipients} onChange={e => setRecipients(e.target.value)} placeholder="email1@example.com, email2@example.com" className="w-full mt-1 p-2 border rounded" />
+              </div>
+            )}
+            <div className="mb-2">
+              <label className="block text-sm">Message</label>
+              <textarea value={message} onChange={e => setMessage(e.target.value)} className="w-full mt-1 p-2 border rounded h-28" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setOpen(false)} className="px-4 py-2">Cancel</button>
+              <button disabled={sending} onClick={send} className="px-4 py-2 bg-blue-600 text-white rounded">{sending ? 'Sending...' : 'Send'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
