@@ -1,15 +1,28 @@
 import { connectDB } from "@/lib/db";
-import booking from "@/models/booking";
+import Booking from "@/models/booking";
+import User from "@/models/Users";
+import Notification from "@/models/Notification";
 import { NextResponse } from "next/server";
 
 export async function POST (request){
     try {
         await connectDB();
         const data = await request.json();
-        const newBooking = new booking(data);
+
+        // Accept optional location provided by client, else try to extract city from address (simple)
+        const location = data.location || (data.address ? data.address.split(',').pop().trim() : '');
+
+        const newBooking = new Booking({ ...data, location });
         await newBooking.save();
+
+        // Notify all admins about new booking — in a real system we'd notify nearest staff
+        const admins = await User.find({ role: { $in: ['admin', 'owner'] } }).select('_id');
+        const notifications = admins.map(a => ({ to: a._id, message: `New booking from ${newBooking.name} — ${newBooking.service}`, booking: newBooking._id }));
+        await Notification.insertMany(notifications);
+
         return NextResponse.json({ message: 'Booking created successfully' }, { status: 201 });
     } catch (error) {
+        console.error('Create booking failed:', error);
         return NextResponse.json({ error: 'Failed to create Booking' }, { status: 500 });
     }
 }

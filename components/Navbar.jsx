@@ -7,15 +7,15 @@ import Image from 'next/image';
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
       setIsLoggedIn(true);
-      if (user.role === 'admin') {
-        setIsAdmin(true);
-      }
+      setIsAdmin(user.role === 'admin' || user.role === 'owner');
+      setIsStaff(user.role === 'staff');
     }
   }, []);
 
@@ -69,6 +69,12 @@ export default function Navbar() {
             </li>
           )}
 
+          {(isAdmin || isStaff) && (
+            <li>
+              <Link href="/notifications" className="hover:text-sky-200 transition duration-200">Notifications</Link>
+            </li>
+          )}
+
           {/* <li>
             {isLoggedIn ? (
               <button
@@ -87,6 +93,7 @@ export default function Navbar() {
         </ul>
         <div className="hidden md:block">
           <Link href={'/booking'} className='bg-white p-2 rounded-xl px-6 text-blue-400 font-bold hover:bg-blue-500 hover:text-white transition-all duration-300'>Appointment</Link>
+          {isStaff && <span className="ml-3 text-sm text-white/90">Staff</span>}
         </div>
       </div>
 

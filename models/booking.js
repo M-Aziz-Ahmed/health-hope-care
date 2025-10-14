@@ -6,7 +6,11 @@ const Booking = new mongoose.Schema({
     phone: { type: String, required: true, },
     address: { type: String, required: true, },
     service: { type: String, required: true, },
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date.now },
+    status: { type: String, enum: ['Pending', 'Confirmed', 'Cancelled'], default: 'Pending' },
+    assignedStaff: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    // simple location field (e.g., city or coordinates string). Real geo-querying would use coordinates and indexes.
+    location: { type: String, default: '' }
 });
 
 // Avoid recompiling model on hot reload

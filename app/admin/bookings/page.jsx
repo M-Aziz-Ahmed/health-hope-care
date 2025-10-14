@@ -74,6 +74,32 @@ export default function BookingTablePage() {
     }
   };
 
+  const assignStaffToBooking = async (bookingId) => {
+    try {
+      const res = await fetch('/api/fetchStaff');
+      if (!res.ok) throw new Error('Failed to fetch staff');
+      const staffList = await res.json();
+      if (staffList.length === 0) return alert('No staff available');
+
+      const choice = prompt('Enter staff email to assign (available: ' + staffList.map(s => s.email).join(', ') + ')');
+      if (!choice) return;
+      const selected = staffList.find(s => s.email === choice.trim());
+      if (!selected) return alert('Staff not found');
+
+      const r2 = await fetch('/api/assignStaff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId, staffId: selected._id })
+      });
+      if (!r2.ok) throw new Error('Assign failed');
+      setBookings(prev => prev.map(b => (b._id === bookingId ? { ...b, assignedStaff: selected, status: 'Confirmed' } : b)));
+      alert('Staff assigned');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to assign staff');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-sky-50 py-16 px-4">
       <div className="max-w-6xl mx-auto">
@@ -116,6 +142,7 @@ export default function BookingTablePage() {
                     <td className="px-6 py-4 text-sm space-x-2">
                       <button className="bg-emerald-600 text-white px-3 py-1 rounded-md text-sm hover:bg-emerald-700" onClick={() => updateStatus(booking._id || booking.id, 'Confirmed')}>Confirm</button>
                       <button className="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600" onClick={() => updateStatus(booking._id || booking.id, 'Cancelled')}>Cancel</button>
+                      <button className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700" onClick={() => assignStaffToBooking(booking._id || booking.id)}>Assign Staff</button>
                       <button className="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700" onClick={() => deleteBooking(booking._id || booking.id)}>Delete</button>
                     </td>
                   </tr>
@@ -153,6 +180,7 @@ export default function BookingTablePage() {
                 <div className="mt-3 flex gap-2">
                   <button className="flex-1 bg-emerald-600 text-white px-3 py-2 rounded-md text-sm" onClick={() => updateStatus(booking._id || booking.id, 'Confirmed')}>Confirm</button>
                   <button className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded-md text-sm" onClick={() => updateStatus(booking._id || booking.id, 'Cancelled')}>Cancel</button>
+                  <button className="flex-1 bg-indigo-600 text-white px-3 py-2 rounded-md text-sm" onClick={() => assignStaffToBooking(booking._id || booking.id)}>Assign Staff</button>
                   <button className="flex-1 bg-red-600 text-white px-3 py-2 rounded-md text-sm" onClick={() => deleteBooking(booking._id || booking.id)}>Delete</button>
                 </div>
               </div>
