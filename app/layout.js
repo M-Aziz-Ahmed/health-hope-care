@@ -1,5 +1,6 @@
 // app/layout.js
 import Navbar from '@/components/Navbar';
+import { Analytics } from "@vercel/analytics/next"
 import './globals.css';
 
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Analytics/>
           <Navbar />
           {children}
           <Footer />
