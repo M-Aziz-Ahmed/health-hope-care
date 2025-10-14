@@ -7,7 +7,7 @@ export async function GET() {
   try {
     await connectDB();
     const cookieStore = cookies();
-    const userId = cookieStore.get('userId')?.value;
+    const userId = await cookieStore.get('userId')?.value;
     if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
     const notes = await Notification.find({ to: userId }).sort({ createdAt: -1 }).populate('booking');
