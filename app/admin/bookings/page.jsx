@@ -53,6 +53,7 @@ export default function BookingTablePage() {
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold">Booking ID</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">Phone</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold">Service</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold">Address</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold">Date</th>
@@ -72,6 +73,7 @@ export default function BookingTablePage() {
                   <tr key={idx} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm">{booking.id}</td>
                     <td className="px-6 py-4 text-sm">{booking.name}</td>
+                    <td className="px-6 py-4 text-sm">{booking.phone}</td>
                     <td className="px-6 py-4 text-sm">{booking.service}</td>
                     <td className="px-6 py-4 text-sm">{booking.address}</td>
                     <td className="px-6 py-4 text-sm">{booking.date}</td>
