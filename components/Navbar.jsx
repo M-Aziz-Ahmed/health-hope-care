@@ -58,7 +58,11 @@ export default function Navbar() {
 
           {isAdmin && (
             <li>
-              <Link href="/admin" className="hover:text-yellow-300 font-semibold transition">
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="block py-2 text-yellow-300 font-semibold"
+              >
                 Admin
               </Link>
             </li>
