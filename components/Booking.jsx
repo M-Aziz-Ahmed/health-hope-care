@@ -34,7 +34,14 @@ export default function BookingPage() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
+    let user = null;
+    try {
+      const raw = localStorage.getItem('currentUser');
+      user = raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      console.warn('Invalid currentUser in localStorage', err);
+      user = null;
+    }
     if (user) {
       setFormData((prev) => ({
         ...prev,

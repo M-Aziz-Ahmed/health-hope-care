@@ -32,7 +32,14 @@ export default function BookingPage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('currentUser'));
+        let user = null;
+        try {
+            const raw = localStorage.getItem('currentUser');
+            user = raw ? JSON.parse(raw) : null;
+        } catch (err) {
+            console.warn('Invalid currentUser in localStorage', err);
+            user = null;
+        }
         setIsLoggedIn(!!user);
     }, []);
 
