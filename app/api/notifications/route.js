@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { connectDB } from '@/lib/db';
+import Booking from '@/models/booking';
 import Notification from '@/models/Notification';
 import { NextResponse } from 'next/server';
 
