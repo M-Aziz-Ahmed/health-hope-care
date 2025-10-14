@@ -110,6 +110,7 @@ export default function AdminDashboard() {
                     <th className="px-4 py-2">Name</th>
                     <th className="px-4 py-2">Email</th>
                     <th className="px-4 py-2">Role</th>
+                    <th className="px-4 py-2">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -122,6 +123,12 @@ export default function AdminDashboard() {
                       <td className="px-4 py-2">{user.name}</td>
                       <td className="px-4 py-2">{user.email}</td>
                       <td className="px-4 py-2 capitalize">{user.role}</td>
+                      <td className="px-4 py-2">
+                        <RoleControls user={user} onRoleChange={(newRole) => {
+                          // update local state optimistically
+                          setUsers((prev) => prev.map(u => u.email === user.email ? { ...u, role: newRole } : u));
+                        }} />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -130,6 +137,43 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function RoleControls({ user, onRoleChange }) {
+  const [loading, setLoading] = useState(false);
+
+  const changeRole = async (role) => {
+    if (user.role === 'owner' && role !== 'owner') {
+      alert('Owner role cannot be changed by admins');
+      return;
+    }
+
+    if (!confirm(`Change role of ${user.email} to ${role}?`)) return;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/updateUserRole', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user._id || user.id, role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      onRoleChange(role);
+      alert('Role updated');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update role: ' + (err.message || 'Server error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex gap-2">
+      <button disabled={loading} onClick={() => changeRole('admin')} className="px-2 py-1 bg-emerald-600 text-white rounded text-sm">Make Admin</button>
+      <button disabled={loading} onClick={() => changeRole('user')} className="px-2 py-1 bg-gray-400 text-white rounded text-sm">Make User</button>
     </div>
   );
 }

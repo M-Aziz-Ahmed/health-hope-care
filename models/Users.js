@@ -6,7 +6,8 @@ const User = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     password: { type: String, required: true, trim: false },
     email: { type: String, required: true, unique: true, lowercase: true },
-    role: { type: String, required: true, enum: ['admin', 'user'], default: 'user' },
+  // Add 'owner' role so the application can have a single owner with elevated rights
+  role: { type: String, required: true, enum: ['owner', 'admin', 'user'], default: 'user' },
   },
   { timestamps: true }
 );
