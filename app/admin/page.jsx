@@ -225,7 +225,10 @@ function SendNotification({ users }) {
             <div className="mb-2">
               <label className="block text-sm">Target</label>
               <select value={target} onChange={e => setTarget(e.target.value)} className="w-full mt-1 p-2 border rounded">
-                <option value="all">All users</option>
+                <option value="all">All registered users</option>
+                <option value="users">Only regular users</option>
+                <option value="admins">Only admins/owner</option>
+                <option value="staff">Only staff</option>
                 <option value="one">One user (email)</option>
                 <option value="some">Some users (emails comma-separated)</option>
               </select>

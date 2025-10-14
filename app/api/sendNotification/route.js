@@ -11,8 +11,19 @@ export async function POST(request) {
 
     let recipients = [];
     if (target === 'all') {
+      // all registered users
       const all = await User.find().select('_id');
       recipients = all.map(a => a._id);
+    } else if (target === 'users') {
+      // only regular users (role === 'user')
+      const list = await User.find({ role: 'user' }).select('_id');
+      recipients = list.map(a => a._id);
+    } else if (target === 'admins') {
+      const list = await User.find({ role: { $in: ['admin', 'owner'] } }).select('_id');
+      recipients = list.map(a => a._id);
+    } else if (target === 'staff') {
+      const list = await User.find({ role: 'staff' }).select('_id');
+      recipients = list.map(a => a._id);
     } else if (target === 'one') {
       if (!users || users.length !== 1) return NextResponse.json({ error: 'Provide single user id' }, { status: 400 });
       recipients = [users[0]];
