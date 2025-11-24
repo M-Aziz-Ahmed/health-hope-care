@@ -1,22 +1,40 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AddServicePage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     icon: '',
+    price: '',
+    duration: '30 mins',
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('✅ Service submitted (you need backend to save it)');
-    console.log(formData);
-    setFormData({ title: '', description: '', icon: '' });
+    setLoading(true);
+    try {
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error('Failed to create service');
+      alert('✅ Service created successfully!');
+      router.push('/admin/services');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to create service');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -62,11 +80,36 @@ export default function AddServicePage() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Price ($)</label>
+            <input
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-emerald-500 focus:ring-2"
+              placeholder="e.g., 50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Duration</label>
+            <input
+              type="text"
+              name="duration"
+              value={formData.duration}
+              onChange={handleChange}
+              className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-emerald-500 focus:ring-2"
+              placeholder="e.g., 30 mins, 1 hour"
+            />
+          </div>
+
           <button
             type="submit"
-            className="w-full bg-emerald-600 text-white py-3 rounded-md font-semibold hover:bg-emerald-700 transition"
+            disabled={loading}
+            className="w-full bg-emerald-600 text-white py-3 rounded-md font-semibold hover:bg-emerald-700 transition disabled:opacity-50"
           >
-            Submit Service
+            {loading ? 'Creating...' : 'Submit Service'}
           </button>
         </form>
       </div>

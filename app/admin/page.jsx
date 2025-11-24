@@ -3,15 +3,28 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Plus,
   CalendarCheck2,
   Users,
+  Briefcase,
+  UserCheck,
+  Clock,
+  BarChart3,
+  TrendingUp,
 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [adminName, setAdminName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalBookings: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    totalServices: 0,
+    staffCount: 0,
+  });
+  const [searchTerm, setSearchTerm] = useState('');
 
   const router = useRouter();
 
@@ -29,6 +42,7 @@ export default function AdminDashboard() {
         }
         setAdminName(user.name);
         fetchUsers();
+        fetchStats();
       } catch (err) {
         router.push('/login');
       } finally {
@@ -46,94 +60,209 @@ export default function AdminDashboard() {
       }
     }
 
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        setStats(data);
+      } catch (err) {
+        console.error('Failed to fetch stats');
+      }
+    }
+
     checkAdmin();
   }, [router]);
 
   if (loading) return <div className="p-8 text-center">Checking admin access...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-sky-100 py-12 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-end mb-4">
-          <SendNotification users={users} />
-        </div>
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-emerald-800 mb-2">Welcome, {adminName} 👋</h1>
-          <p className="text-gray-600 text-lg">Here is your admin dashboard</p>
-        </div>
-
-        {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          <Link href="/admin/add-service">
-            <div className="bg-white border hover:shadow-lg p-6 rounded-xl flex items-start gap-4">
-              <div className="bg-emerald-100 p-2 rounded-full">
-                <Plus className="text-emerald-600" size={28} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-emerald-700">Add New Service</h3>
-                <p className="text-sm text-gray-500 mt-1">Publish healthcare services.</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link href="/admin/bookings">
-            <div className="bg-white border hover:shadow-lg p-6 rounded-xl flex items-start gap-4">
-              <div className="bg-emerald-100 p-2 rounded-full">
-                <CalendarCheck2 className="text-emerald-600" size={28} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-emerald-700">Manage Bookings</h3>
-                <p className="text-sm text-gray-500 mt-1">Approve or cancel bookings.</p>
-              </div>
-            </div>
-          </Link>
-
-          <div className="bg-white border p-6 rounded-xl flex items-start gap-4">
-            <div className="bg-emerald-100 p-2 rounded-full">
-              <Users className="text-emerald-600" size={28} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
+      {/* Top Bar */}
+      <div className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-2 rounded-xl shadow-lg">
+              <Users className="text-white" size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-emerald-700">Total Users</h3>
-              <p className="text-sm text-gray-500 mt-1">{users.length} registered users</p>
+              <h1 className="text-2xl font-bold text-slate-800">Admin Dashboard</h1>
+              <p className="text-sm text-slate-600">Welcome back, {adminName}</p>
+            </div>
+          </div>
+          <SendNotification users={users} />
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                <Users size={28} />
+              </div>
+              <div className="text-right">
+                <p className="text-sm opacity-90 mb-1">Total Users</p>
+                <p className="text-4xl font-bold">{stats.totalUsers}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm opacity-90">
+              <TrendingUp size={16} />
+              <span>Active users</span>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-xl p-6 text-white hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                <CalendarCheck2 size={28} />
+              </div>
+              <div className="text-right">
+                <p className="text-sm opacity-90 mb-1">Total Bookings</p>
+                <p className="text-4xl font-bold">{stats.totalBookings}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border hover:shadow-lg p-6 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="bg-yellow-100 p-3 rounded-full">
+                <Clock className="text-yellow-600" size={28} />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Pending</p>
+                <p className="text-3xl font-bold text-yellow-600">{stats.pendingBookings}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border hover:shadow-lg p-6 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="bg-purple-100 p-3 rounded-full">
+                <UserCheck className="text-purple-600" size={28} />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Staff Members</p>
+                <p className="text-3xl font-bold text-purple-600">{stats.staffCount}</p>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-slate-800 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="/admin/analytics">
+              <div className="bg-white border-2 border-slate-200 hover:border-emerald-500 hover:shadow-xl p-5 rounded-xl transition-all duration-300 cursor-pointer group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-gradient-to-br from-emerald-100 to-emerald-200 p-2 rounded-lg group-hover:from-emerald-500 group-hover:to-emerald-600 transition-all">
+                    <BarChart3 className="text-emerald-600 group-hover:text-white" size={20} />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">Analytics</h3>
+                </div>
+                <p className="text-sm text-slate-600">View insights</p>
+              </div>
+            </Link>
+
+            <Link href="/admin/services">
+              <div className="bg-white border-2 border-slate-200 hover:border-blue-500 hover:shadow-xl p-5 rounded-xl transition-all duration-300 cursor-pointer group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-2 rounded-lg group-hover:from-blue-500 group-hover:to-blue-600 transition-all">
+                    <Briefcase className="text-blue-600 group-hover:text-white" size={20} />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">Services</h3>
+                </div>
+                <p className="text-sm text-slate-600">Manage services</p>
+              </div>
+            </Link>
+
+            <Link href="/admin/bookings">
+              <div className="bg-white border-2 border-slate-200 hover:border-purple-500 hover:shadow-xl p-5 rounded-xl transition-all duration-300 cursor-pointer group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-gradient-to-br from-purple-100 to-purple-200 p-2 rounded-lg group-hover:from-purple-500 group-hover:to-purple-600 transition-all">
+                    <CalendarCheck2 className="text-purple-600 group-hover:text-white" size={20} />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">Bookings</h3>
+                </div>
+                <p className="text-sm text-slate-600">Manage bookings</p>
+              </div>
+            </Link>
+
+            <Link href="/admin/staff">
+              <div className="bg-white border-2 border-slate-200 hover:border-indigo-500 hover:shadow-xl p-5 rounded-xl transition-all duration-300 cursor-pointer group">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-gradient-to-br from-indigo-100 to-indigo-200 p-2 rounded-lg group-hover:from-indigo-500 group-hover:to-indigo-600 transition-all">
+                    <UserCheck className="text-indigo-600 group-hover:text-white" size={20} />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">Staff</h3>
+                </div>
+                <p className="text-sm text-slate-600">View staff</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+
+
         {/* Users Table */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold text-emerald-700 mb-4">Registered User Info</h2>
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-slate-800">User Management</h2>
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-4 py-2 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+            />
+          </div>
           {users.length === 0 ? (
             <p className="text-gray-500">No users registered yet.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border border-gray-200 rounded-lg overflow-hidden">
-                <thead className="bg-emerald-100 text-emerald-700">
+              <table className="w-full text-left">
+                <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200">
                   <tr>
-                    <th className="px-4 py-2">#</th>
-                    <th className="px-4 py-2">Name</th>
-                    <th className="px-4 py-2">Email</th>
-                    <th className="px-4 py-2">Role</th>
-                    <th className="px-4 py-2">Action</th>
+                    <th className="px-4 py-3 text-sm font-semibold text-slate-700">#</th>
+                    <th className="px-4 py-3 text-sm font-semibold text-slate-700">Name</th>
+                    <th className="px-4 py-3 text-sm font-semibold text-slate-700">Email</th>
+                    <th className="px-4 py-3 text-sm font-semibold text-slate-700">Role</th>
+                    <th className="px-4 py-3 text-sm font-semibold text-slate-700">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user, i) => (
-                    <tr
-                      key={user.email}
-                      className="border-t hover:bg-emerald-50 transition"
-                    >
-                      <td className="px-4 py-2">{i + 1}</td>
-                      <td className="px-4 py-2">{user.name}</td>
-                      <td className="px-4 py-2">{user.email}</td>
-                      <td className="px-4 py-2 capitalize">{user.role}</td>
-                      <td className="px-4 py-2">
-                        <RoleControls user={user} onRoleChange={(newRole) => {
-                          // update local state optimistically
-                          setUsers((prev) => prev.map(u => u.email === user.email ? { ...u, role: newRole } : u));
-                        }} />
-                      </td>
-                    </tr>
-                  ))}
+                  {users
+                    .filter(user =>
+                      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((user, i) => (
+                      <tr
+                        key={user.email}
+                        className="border-b border-slate-100 hover:bg-slate-50 transition"
+                      >
+                        <td className="px-4 py-3 text-sm text-slate-600">{i + 1}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-slate-800">{user.name}</td>
+                        <td className="px-4 py-3 text-sm text-slate-600">{user.email}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            user.role === 'admin' || user.role === 'owner' ? 'bg-purple-100 text-purple-700' :
+                            user.role === 'staff' ? 'bg-blue-100 text-blue-700' :
+                            'bg-slate-100 text-slate-700'
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <RoleControls user={user} onRoleChange={(newRole) => {
+                            setUsers((prev) => prev.map(u => u.email === user.email ? { ...u, role: newRole } : u));
+                          }} />
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

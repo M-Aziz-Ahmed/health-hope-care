@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 export default function BookingTablePage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   // Optional: Dummy fallback data (for local dev)
   const dummyBookings = [
@@ -100,10 +103,67 @@ export default function BookingTablePage() {
     }
   };
 
+  const filteredBookings = bookings.filter(booking => {
+    const matchesSearch = booking.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.phone.includes(searchTerm);
+    const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const exportToCSV = () => {
+    const headers = ['ID', 'Name', 'Phone', 'Service', 'Address', 'Date', 'Status'];
+    const rows = filteredBookings.map(b => [
+      b._id || b.id,
+      b.name,
+      b.phone,
+      b.service,
+      b.address,
+      new Date(b.date).toLocaleDateString(),
+      b.status
+    ]);
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bookings-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+
   return (
     <div className="min-h-screen bg-sky-50 py-16 px-4">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-sky-800 mb-6 text-center">Manage Bookings</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold text-sky-800">Manage Bookings</h2>
+          <button
+            onClick={exportToCSV}
+            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
+          >
+            Export CSV
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Search by name, service, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="all">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
 
         {/* Desktop table */}
         <div className="hidden md:block overflow-auto shadow-xl rounded-lg">
@@ -125,8 +185,8 @@ export default function BookingTablePage() {
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-gray-500">Loading bookings...</td>
                 </tr>
-              ) : bookings.length > 0 ? (
-                bookings.map((booking, idx) => (
+              ) : filteredBookings.length > 0 ? (
+                filteredBookings.map((booking, idx) => (
                   <tr key={booking._id || booking.id || idx} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm">{booking._id || booking.id}</td>
                     <td className="px-6 py-4 text-sm">{booking.name}</td>
@@ -140,6 +200,7 @@ export default function BookingTablePage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm space-x-2">
+                      <button className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700" onClick={() => setSelectedBooking(booking)}>View</button>
                       <button className="bg-emerald-600 text-white px-3 py-1 rounded-md text-sm hover:bg-emerald-700" onClick={() => updateStatus(booking._id || booking.id, 'Confirmed')}>Confirm</button>
                       <button className="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600" onClick={() => updateStatus(booking._id || booking.id, 'Cancelled')}>Cancel</button>
                       <button className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700" onClick={() => assignStaffToBooking(booking._id || booking.id)}>Assign Staff</button>
@@ -160,8 +221,8 @@ export default function BookingTablePage() {
         <div className="md:hidden space-y-4">
           {loading ? (
             <div className="text-center py-8 text-gray-500">Loading bookings...</div>
-          ) : bookings.length > 0 ? (
-            bookings.map((booking, idx) => (
+          ) : filteredBookings.length > 0 ? (
+            filteredBookings.map((booking, idx) => (
               <div key={booking._id || booking.id || idx} className="bg-white p-4 rounded-lg shadow">
                 <div className="flex justify-between items-start">
                   <div>
@@ -189,6 +250,73 @@ export default function BookingTablePage() {
             <div className="text-center py-8 text-gray-500">No bookings found.</div>
           )}
         </div>
+
+        {/* Booking Details Modal */}
+        {selectedBooking && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-2xl font-bold text-emerald-700">Booking Details</h3>
+                <button onClick={() => setSelectedBooking(null)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Booking ID</p>
+                    <p className="font-medium">{selectedBooking._id || selectedBooking.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <span className={`inline-block px-3 py-1 rounded-full text-white text-xs font-medium ${selectedBooking.status === 'Confirmed' ? 'bg-emerald-600' : selectedBooking.status === 'Cancelled' ? 'bg-red-500' : 'bg-yellow-500'}`}>
+                      {selectedBooking.status}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Patient Name</p>
+                  <p className="font-medium">{selectedBooking.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Phone</p>
+                  <p className="font-medium">{selectedBooking.phone}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium">{selectedBooking.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Service</p>
+                  <p className="font-medium">{selectedBooking.service}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Address</p>
+                  <p className="font-medium">{selectedBooking.address}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Date</p>
+                  <p className="font-medium">{new Date(selectedBooking.date).toLocaleString()}</p>
+                </div>
+                {selectedBooking.assignedStaff && (
+                  <div>
+                    <p className="text-sm text-gray-500">Assigned Staff</p>
+                    <p className="font-medium">{selectedBooking.assignedStaff.name || selectedBooking.assignedStaff.email}</p>
+                  </div>
+                )}
+                {selectedBooking.location && (
+                  <div>
+                    <p className="text-sm text-gray-500">Location</p>
+                    <p className="font-medium">{selectedBooking.location}</p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-6 flex gap-2">
+                <button onClick={() => { updateStatus(selectedBooking._id || selectedBooking.id, 'Confirmed'); setSelectedBooking(null); }} className="flex-1 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">Confirm</button>
+                <button onClick={() => { updateStatus(selectedBooking._id || selectedBooking.id, 'Cancelled'); setSelectedBooking(null); }} className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Cancel</button>
+                <button onClick={() => { assignStaffToBooking(selectedBooking._id || selectedBooking.id); }} className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Assign Staff</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

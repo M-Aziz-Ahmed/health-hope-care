@@ -37,13 +37,19 @@ export default function Navbar() {
     async function loadNotes() {
       try {
         const res = await fetch('/api/notifications');
-        if (!res.ok) return;
+        if (!res.ok) {
+          setNotifications([]);
+          return;
+        }
         const data = await res.json();
         if (!mounted) return;
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.read).length);
+        const notesArray = Array.isArray(data) ? data : [];
+        setNotifications(notesArray);
+        setUnreadCount(notesArray.filter(n => !n.read).length);
       } catch (err) {
         console.error('Failed to load notifications', err);
+        setNotifications([]);
+        setUnreadCount(0);
       }
     }
     loadNotes();
@@ -72,7 +78,7 @@ export default function Navbar() {
     { href: '/about', label: 'About Us' },
     { href: '/services', label: 'Services' },
     { href: '/booking', label: 'Booking' },
-    // { href: '/', label: 'Blogs' },
+    { href: '/reviews', label: 'Reviews' },
     { href: '/contact', label: 'Contact Us' },
   ];
 

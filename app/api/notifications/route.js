@@ -9,12 +9,12 @@ export async function GET() {
     await connectDB();
     const cookieStore = await cookies();
     const userId =  cookieStore.get('userId')?.value;
-    if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    if (!userId) return NextResponse.json([], { status: 200 });
 
     const notes = await Notification.find({ to: userId }).sort({ createdAt: -1 }).populate('booking');
-    return NextResponse.json(notes, { status: 200 });
+    return NextResponse.json(notes || [], { status: 200 });
   } catch (error) {
     console.error('Fetch notifications failed', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json([], { status: 200 });
   }
 }

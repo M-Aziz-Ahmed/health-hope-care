@@ -4,6 +4,8 @@ import ServicesPage from '@/components/Services';
 import AboutPage from '@/components/About';
 import Testimonials from '@/components/Testimonials';
 import BookingPage from '@/components/Booking';
+import Analytics from '@/components/Analytics';
+import FAQ from '@/components/FAQ';
 
 const page = () => {
   return (
@@ -11,8 +13,10 @@ const page = () => {
       <Hero />
       <AboutPage />
       <ServicesPage />
+      <Analytics />
       <BookingPage />
       <Testimonials />
+      <FAQ />
     </main>
   );
 }
