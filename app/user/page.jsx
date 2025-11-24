@@ -124,7 +124,7 @@ export default function UserDashboard() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
                     <div className="flex items-center gap-2 text-slate-600">
                       <Calendar size={16} />
                       <span>{new Date(booking.date).toLocaleString()}</span>
@@ -138,6 +138,13 @@ export default function UserDashboard() {
                       <span>{booking.address}</span>
                     </div>
                   </div>
+
+                  <a 
+                    href={`/user/booking/${booking._id}`}
+                    className="block w-full bg-emerald-600 text-white text-center py-2 rounded-lg font-semibold hover:bg-emerald-700 transition"
+                  >
+                    Track Booking
+                  </a>
                 </div>
               ))}
             </div>

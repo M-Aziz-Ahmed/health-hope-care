@@ -1,6 +1,72 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, Send } from 'lucide-react';
+
+function RecentReviews() {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      console.log('Fetching reviews...');
+      const res = await fetch('/api/reviews');
+      console.log('Response status:', res.status);
+      const data = await res.json();
+      console.log('Reviews data:', data);
+      setReviews(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="mt-12 text-center">
+        <p className="text-gray-600">Loading reviews...</p>
+      </div>
+    );
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <div className="mt-12 text-center">
+        <p className="text-gray-600">No reviews yet. Be the first to share your experience!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-12">
+      <h2 className="text-2xl font-bold text-emerald-800 mb-6">Recent Reviews</h2>
+      <div className="space-y-4">
+        {reviews.map((review) => (
+          <div key={review._id} className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h3 className="font-semibold text-gray-800">{review.name}</h3>
+                <p className="text-sm text-gray-500">{review.service}</p>
+                <p className="text-xs text-gray-400">{new Date(review.createdAt).toLocaleDateString()}</p>
+              </div>
+              <div className="flex">
+                {[...Array(review.rating)].map((_, i) => (
+                  <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+            </div>
+            <p className="text-gray-700">{review.review}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ReviewsPage() {
   const [rating, setRating] = useState(0);
@@ -15,14 +81,34 @@ export default function ReviewsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // In production, send to API
-    console.log({ ...formData, rating });
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', email: '', service: '', review: '' });
-      setRating(0);
-    }, 3000);
+    if (rating === 0) {
+      alert('Please select a rating');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, rating }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSubmitted(true);
+        setTimeout(() => {
+          setSubmitted(false);
+          setFormData({ name: '', email: '', service: '', review: '' });
+          setRating(0);
+        }, 3000);
+      } else {
+        alert(data.error || 'Failed to submit review');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit review. Please try again.');
+    }
   };
 
   const handleChange = (e) => {
@@ -142,31 +228,7 @@ export default function ReviewsPage() {
         </div>
 
         {/* Recent Reviews Section */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-emerald-800 mb-6">Recent Reviews</h2>
-          <div className="space-y-4">
-            {[
-              { name: 'Sarah Johnson', rating: 5, service: 'Injection at Home', review: 'Excellent service! The nurse was professional and caring. Highly recommend.' },
-              { name: 'Michael Chen', rating: 5, service: 'ECG at Home', review: 'Very convenient and the staff was knowledgeable. Great experience overall.' },
-              { name: 'Emily Davis', rating: 4, service: 'Blood Test', review: 'Quick and painless. The results were delivered on time. Good service.' }
-            ].map((review, idx) => (
-              <div key={idx} className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{review.name}</h3>
-                    <p className="text-sm text-gray-500">{review.service}</p>
-                  </div>
-                  <div className="flex">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700">{review.review}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <RecentReviews />
       </div>
     </div>
   );

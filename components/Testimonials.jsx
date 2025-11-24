@@ -1,37 +1,7 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const testimonials = [
-  {
-    name: 'Ali Raza',
-    location: 'Lahore',
-    review:
-      'Health Hope Care provided amazing home nursing service. The staff was polite, punctual, and extremely professional!',
-    rating: 5,
-  },
-  {
-    name: 'Fatima Noor',
-    location: 'Islamabad',
-    review:
-      'The doctor came on time and helped my elderly mother feel comfortable. Highly recommended!',
-    rating: 4,
-  },
-  {
-    name: 'Usman Khan',
-    location: 'Karachi',
-    review:
-      'Very convenient service. Got an ECG done at home without any hassle. Great team!',
-    rating: 5,
-  },
-  {
-    name: 'Saba Khan',
-    location: 'Lahore',
-    review:
-      'I had a great experience with Health Hope Care. The staff was friendly and helpful. Highly recommended!',
-    rating: 4,
-  }
-];
 
 const cardVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -47,6 +17,50 @@ const cardVariants = {
 };
 
 export default function Testimonials() {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      console.log('Testimonials: Fetching reviews...');
+      const res = await fetch('/api/reviews');
+      console.log('Testimonials: Response status:', res.status);
+      const data = await res.json();
+      console.log('Testimonials: Reviews data:', data);
+      const reviews = Array.isArray(data) ? data.slice(0, 6) : [];
+      setTestimonials(reviews);
+    } catch (error) {
+      console.error('Testimonials: Failed to fetch reviews:', error);
+      setTestimonials([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="bg-gradient-to-br from-white to-emerald-50 py-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-gray-600">Loading testimonials...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (testimonials.length === 0) {
+    return (
+      <section className="bg-gradient-to-br from-white to-emerald-50 py-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-blue-800 mb-4">What Our Patients Say</h2>
+          <p className="text-gray-600">Be the first to share your experience!</p>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="bg-gradient-to-br from-white to-emerald-50 py-20 px-4">
       <div className="max-w-6xl mx-auto text-center">
@@ -72,7 +86,7 @@ export default function Testimonials() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((t, i) => (
             <motion.div
-              key={i}
+              key={t._id || i}
               className="bg-white p-6 rounded-2xl shadow-lg border border-blue-300"
               custom={i}
               initial="hidden"
@@ -89,9 +103,18 @@ export default function Testimonials() {
               </div>
               <p className="text-gray-700 italic">“{t.review}”</p>
               <div className="mt-4 text-blue-500 font-semibold">{t.name}</div>
-              <div className="text-sm text-gray-500">{t.location}</div>
+              <div className="text-sm text-gray-500">{t.service}</div>
             </motion.div>
           ))}
+        </div>
+        
+        <div className="mt-8">
+          <a 
+            href="/reviews" 
+            className="inline-block bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition"
+          >
+            Share Your Experience
+          </a>
         </div>
       </div>
     </section>
