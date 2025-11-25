@@ -95,7 +95,8 @@ export default function StaffDashboard() {
   useEffect(() => {
     if (!staffInfo?._id) return;
 
-    const socketInstance = io();
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    const socketInstance = io(socketUrl);
     
     socketInstance.on('connect', () => {
       console.log('Staff socket connected:', socketInstance.id);

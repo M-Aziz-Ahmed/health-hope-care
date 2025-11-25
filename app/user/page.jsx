@@ -51,7 +51,8 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!userInfo?._id) return;
 
-    const socketInstance = io();
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    const socketInstance = io(socketUrl);
     
     socketInstance.on('connect', () => {
       console.log('User socket connected:', socketInstance.id);

@@ -99,7 +99,9 @@ export default function WebRTCallWithSocket({ booking, currentUser, onClose, onC
 
   // Initialize Socket.IO
   useEffect(() => {
-    const socketInstance = io();
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    console.log('Connecting to Socket.IO server:', socketUrl);
+    const socketInstance = io(socketUrl);
     
     socketInstance.on('connect', () => {
       console.log('Socket connected:', socketInstance.id);
