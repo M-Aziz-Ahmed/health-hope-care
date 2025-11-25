@@ -18,6 +18,7 @@ import {
 import Link from 'next/link';
 import ChatWindow from '@/components/ChatWindow';
 import VideoCall from '@/components/VideoCall';
+import { io } from 'socket.io-client';
 
 export default function BookingTrackingPage() {
   const params = useParams();
@@ -29,19 +30,41 @@ export default function BookingTrackingPage() {
   const [showChat, setShowChat] = useState(false);
   const [showCall, setShowCall] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     fetchBooking();
     fetchCurrentUser();
-    // Simulate real-time location updates every 10 seconds
-    const locationInterval = setInterval(() => {
-      if (booking?.assignedStaff) {
-        updateStaffLocation();
-      }
-    }, 10000);
+  }, [params.id]);
 
-    return () => clearInterval(locationInterval);
-  }, [params.id, booking?.assignedStaff]);
+  // Socket.IO for real-time staff location updates
+  useEffect(() => {
+    if (!booking?.assignedStaff) return;
+
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    const socketInstance = io(socketUrl);
+
+    socketInstance.on('connect', () => {
+      console.log('Connected to location tracking');
+      // Join room for this booking to receive location updates
+      socketInstance.emit('join-booking', params.id);
+    });
+
+    // Listen for staff location updates
+    socketInstance.on('staff-location-update', ({ location, estimatedTime }) => {
+      console.log('Received staff location:', location);
+      setStaffLocation(location);
+      if (estimatedTime) {
+        setEstimatedTime(estimatedTime);
+      }
+    });
+
+    setSocket(socketInstance);
+
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, [booking?.assignedStaff, params.id]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -82,19 +105,7 @@ export default function BookingTrackingPage() {
     }
   };
 
-  const updateStaffLocation = () => {
-    // Simulate staff location (in production, this would come from real GPS)
-    const mockLocation = {
-      lat: 24.8607 + (Math.random() - 0.5) * 0.01,
-      lng: 67.0011 + (Math.random() - 0.5) * 0.01,
-    };
-    setStaffLocation(mockLocation);
-    
-    // Calculate estimated time (mock calculation)
-    const distance = Math.random() * 5; // km
-    const timeInMinutes = Math.ceil(distance * 3); // 3 min per km
-    setEstimatedTime(timeInMinutes);
-  };
+
 
   const getProgressSteps = () => {
     if (!booking) return [];

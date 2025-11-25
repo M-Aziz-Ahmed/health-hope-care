@@ -155,6 +155,19 @@ export default function StaffDashboard() {
   const [routeInfo, setRouteInfo] = useState(null);
   const [locationWatchId, setLocationWatchId] = useState(null);
 
+  // Calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in km
+  };
+
   const handleNavigate = async (booking) => {
     setSelectedBooking(booking);
     setRouteInfo(null);
@@ -185,6 +198,32 @@ export default function StaffDashboard() {
                 }
                 return prev;
               });
+
+              // Send location update via Socket.IO
+              if (socket && booking?._id) {
+                const location = {
+                  lat: newPosition.coords.latitude,
+                  lng: newPosition.coords.longitude
+                };
+                
+                // Calculate estimated time if we have destination
+                let estimatedTime = null;
+                if (prev.end) {
+                  const distance = calculateDistance(
+                    newPosition.coords.latitude,
+                    newPosition.coords.longitude,
+                    prev.end[0],
+                    prev.end[1]
+                  );
+                  estimatedTime = Math.ceil(distance * 3); // 3 min per km
+                }
+
+                socket.emit('update-staff-location', {
+                  bookingId: booking._id,
+                  location,
+                  estimatedTime
+                });
+              }
             },
             (error) => {
               console.error("Location watch error:", error);

@@ -73,6 +73,20 @@ app.prepare().then(() => {
       io.to(to).emit('ice-candidate', { candidate });
     });
 
+    // Location tracking
+    socket.on('join-booking', (bookingId) => {
+      socket.join(`booking-${bookingId}`);
+      console.log(`User joined booking room: booking-${bookingId}`);
+    });
+
+    socket.on('update-staff-location', ({ bookingId, location, estimatedTime }) => {
+      console.log(`Staff location update for booking ${bookingId}:`, location);
+      io.to(`booking-${bookingId}`).emit('staff-location-update', {
+        location,
+        estimatedTime
+      });
+    });
+
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
     });
