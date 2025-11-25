@@ -15,7 +15,7 @@ export async function GET() {
       return NextResponse.json({ isAdmin: false, error: 'Not logged in' }, { status: 401 });
     }
 
-  const user = await User.findById(userId).select('name email role');
+  const user = await User.findById(userId).select('name email role phone');
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -23,9 +23,11 @@ export async function GET() {
 
     // Return user info for frontend
     return NextResponse.json({
+      _id: user._id.toString(),
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      phone: user.phone || ''
     }, { status: 200 });
 
   } catch (error) {

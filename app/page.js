@@ -6,6 +6,7 @@ import Testimonials from '@/components/Testimonials';
 import BookingPage from '@/components/Booking';
 import Analytics from '@/components/Analytics';
 import FAQ from '@/components/FAQ';
+import AIChatbot from '@/components/AIChatbot';
 
 const page = () => {
   return (
@@ -17,6 +18,7 @@ const page = () => {
       <BookingPage />
       <Testimonials />
       <FAQ />
+      <AIChatbot />
     </main>
   );
 }

@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     await connectDB();
-    const bookings = await Booking.find(); // variable renamed for clarity
+    const bookings = await Booking.find().populate('assignedStaff', 'name email role phone'); // Populate assignedStaff with phone
     return NextResponse.json(bookings, { status: 200 });
   } catch (error) {
     console.error("Error fetching bookings:", error);

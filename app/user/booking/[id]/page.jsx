@@ -11,9 +11,13 @@ import {
   Navigation,
   Calendar,
   ArrowLeft,
-  Star
+  Star,
+  MessageCircle,
+  Video
 } from 'lucide-react';
 import Link from 'next/link';
+import ChatWindow from '@/components/ChatWindow';
+import VideoCall from '@/components/VideoCall';
 
 export default function BookingTrackingPage() {
   const params = useParams();
@@ -22,9 +26,13 @@ export default function BookingTrackingPage() {
   const [loading, setLoading] = useState(true);
   const [staffLocation, setStaffLocation] = useState(null);
   const [estimatedTime, setEstimatedTime] = useState(null);
+  const [showChat, setShowChat] = useState(false);
+  const [showCall, setShowCall] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     fetchBooking();
+    fetchCurrentUser();
     // Simulate real-time location updates every 10 seconds
     const locationInterval = setInterval(() => {
       if (booking?.assignedStaff) {
@@ -35,10 +43,27 @@ export default function BookingTrackingPage() {
     return () => clearInterval(locationInterval);
   }, [params.id, booking?.assignedStaff]);
 
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/current-user');
+      if (res.ok) {
+        const user = await res.json();
+        setCurrentUser(user);
+      }
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+    }
+  };
+
   const fetchBooking = async () => {
     try {
       const res = await fetch('/api/fetchBooking');
       const data = await res.json();
+      if (!Array.isArray(data)) {
+        console.error('Invalid data format from API');
+        router.push('/user');
+        return;
+      }
       const found = data.find(b => b._id === params.id);
       
       if (found) {
@@ -50,7 +75,8 @@ export default function BookingTrackingPage() {
         router.push('/user');
       }
     } catch (error) {
-      console.error('Failed to fetch booking');
+      console.error('Failed to fetch booking:', error);
+      router.push('/user');
     } finally {
       setLoading(false);
     }
@@ -86,7 +112,7 @@ export default function BookingTrackingPage() {
         id: 2,
         title: 'Assigning Staff',
         description: booking.assignedStaff 
-          ? `${booking.assignedStaff.name} has been assigned`
+          ? `${typeof booking.assignedStaff === 'object' ? booking.assignedStaff.name : 'Staff'} has been assigned`
           : 'Finding the best staff member for you',
         completed: !!booking.assignedStaff,
         icon: User,
@@ -96,7 +122,7 @@ export default function BookingTrackingPage() {
         id: 3,
         title: 'Staff En Route',
         description: booking.status === 'Confirmed' && booking.assignedStaff
-          ? `${booking.assignedStaff.name} is on the way`
+          ? `${typeof booking.assignedStaff === 'object' ? booking.assignedStaff.name : 'Staff'} is on the way`
           : 'Waiting for confirmation',
         completed: booking.status === 'Confirmed' && booking.assignedStaff,
         icon: Navigation,
@@ -263,8 +289,8 @@ export default function BookingTrackingPage() {
                   <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <User className="text-white" size={48} />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800">{booking.assignedStaff.name}</h3>
-                  <p className="text-sm text-slate-600 capitalize">{booking.assignedStaff.role}</p>
+                  <h3 className="text-xl font-bold text-slate-800">{typeof booking.assignedStaff === 'object' ? booking.assignedStaff.name : 'Assigned Staff'}</h3>
+                  <p className="text-sm text-slate-600 capitalize">{typeof booking.assignedStaff === 'object' ? booking.assignedStaff.role : 'Healthcare Professional'}</p>
                   
                   {/* Rating */}
                   <div className="flex items-center justify-center gap-1 mt-2">
@@ -280,7 +306,7 @@ export default function BookingTrackingPage() {
                     <Mail className="text-emerald-600" size={20} />
                     <div className="text-sm">
                       <div className="text-slate-500">Email</div>
-                      <div className="font-medium text-slate-800">{booking.assignedStaff.email}</div>
+                      <div className="font-medium text-slate-800">{typeof booking.assignedStaff === 'object' ? booking.assignedStaff.email : 'N/A'}</div>
                     </div>
                   </div>
 
@@ -303,10 +329,22 @@ export default function BookingTrackingPage() {
                   )}
                 </div>
 
-                <button className="w-full mt-4 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
-                  <Phone size={20} />
-                  Call Staff
-                </button>
+                <div className="w-full mt-4 flex gap-2">
+                  <button
+                    onClick={() => setShowChat(true)}
+                    className="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle size={20} />
+                    Chat
+                  </button>
+                  <button
+                    onClick={() => setShowCall(true)}
+                    className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2"
+                  >
+                    <Phone size={20} />
+                    Call
+                  </button>
+                </div>
               </div>
             )}
 
@@ -351,6 +389,26 @@ export default function BookingTrackingPage() {
           </div>
         </div>
       </div>
+
+      {/* Chat Window */}
+      {showChat && booking && (
+        <ChatWindow
+          bookingId={booking._id}
+          booking={booking}
+          currentUser={currentUser}
+          onClose={() => setShowChat(false)}
+        />
+      )}
+
+      {/* Video Call */}
+      {showCall && booking && (
+        <VideoCall
+          booking={booking}
+          currentUser={currentUser}
+          onClose={() => setShowCall(false)}
+          onCallEnd={() => setShowCall(false)}
+        />
+      )}
     </div>
   );
 }

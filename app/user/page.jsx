@@ -1,12 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Clock, MapPin, Phone, Mail, FileText } from 'lucide-react';
+import { Calendar, Clock, MapPin, Phone, Mail, FileText, PhoneOff } from 'lucide-react';
+import { io } from 'socket.io-client';
 
 export default function UserDashboard() {
   const [bookings, setBookings] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [socket, setSocket] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -43,6 +46,63 @@ export default function UserDashboard() {
 
     checkUser();
   }, [router]);
+
+  // Socket.IO for incoming calls
+  useEffect(() => {
+    if (!userInfo?._id) return;
+
+    const socketInstance = io();
+    
+    socketInstance.on('connect', () => {
+      console.log('User socket connected:', socketInstance.id);
+      socketInstance.emit('join', userInfo._id);
+    });
+
+    socketInstance.on('incoming-call', async ({ from, offer, callType, callerName, booking: bookingId }) => {
+      console.log('Incoming call from:', callerName);
+      
+      // Fetch the booking details
+      try {
+        const res = await fetch('/api/fetchBooking');
+        const allBookings = await res.json();
+        const booking = allBookings.find(b => b._id === bookingId);
+        
+        if (booking) {
+          setIncomingCall({ from, offer, callType, callerName, booking });
+        }
+      } catch (error) {
+        console.error('Error fetching booking for call:', error);
+      }
+    });
+
+    socketInstance.on('call-ended', () => {
+      setIncomingCall(null);
+    });
+
+    socketInstance.on('call-rejected', () => {
+      setIncomingCall(null);
+    });
+
+    setSocket(socketInstance);
+
+    return () => {
+      socketInstance.disconnect();
+    };
+  }, [userInfo?._id]);
+
+  const answerCall = () => {
+    if (incomingCall) {
+      // Navigate to the booking page to answer the call
+      router.push(`/user/booking/${incomingCall.booking._id}`);
+    }
+  };
+
+  const rejectCall = () => {
+    if (socket && incomingCall) {
+      socket.emit('reject-call', { to: incomingCall.from });
+      setIncomingCall(null);
+    }
+  };
 
   if (loading) return <div className="p-8 text-center">Loading...</div>;
 
@@ -151,6 +211,43 @@ export default function UserDashboard() {
           )}
         </div>
       </div>
+
+      {/* Incoming Call Notification */}
+      {incomingCall && (
+        <div className="fixed bottom-4 right-4 z-[10000] animate-bounce">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 border-4 border-green-500 min-w-[320px]">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <Phone size={24} className="text-green-600 animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-800">
+                  Incoming {incomingCall.callType === 'video' ? 'Video' : 'Voice'} Call
+                </h4>
+                <p className="text-sm text-gray-600">{incomingCall.callerName}</p>
+                <p className="text-xs text-gray-500">{incomingCall.booking?.service}</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                onClick={rejectCall}
+                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-semibold flex items-center justify-center gap-2"
+              >
+                <PhoneOff size={18} />
+                Reject
+              </button>
+              <button
+                onClick={answerCall}
+                className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-semibold flex items-center justify-center gap-2"
+              >
+                <Phone size={18} />
+                Answer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

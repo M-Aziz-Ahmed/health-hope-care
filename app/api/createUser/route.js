@@ -30,6 +30,7 @@ export async function POST(request) {
       email,
       password: hashedPassword,
       role: role || 'user', // Default to 'user' if role not provided
+      phone: data.phone || '', // Optional phone number
     });
 
     await newUser.save();
