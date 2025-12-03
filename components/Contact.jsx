@@ -122,7 +122,7 @@ export default function BookingPage() {
                                 required
                                 onChange={handleChange}
                                 className="mt-1 w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                                placeholder="+92 300 1234567"
+                                placeholder="+92 306 1706085"
                             />
                         </div>
 

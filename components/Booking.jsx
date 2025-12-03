@@ -355,7 +355,7 @@ export default function BookingPage() {
                       required
                       onChange={handleChange}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                      placeholder="+92 300 1234567"
+                      placeholder="+92 306 1706085"
                     />
                     {errors.phone && <p className="text-sm text-red-600 mt-1 flex items-center gap-1"><AlertCircle size={14} />{errors.phone}</p>}
                   </div>

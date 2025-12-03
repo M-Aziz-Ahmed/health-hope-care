@@ -325,7 +325,7 @@ export default function BookingTrackingPage() {
                     <Phone className="text-emerald-600" size={20} />
                     <div className="text-sm">
                       <div className="text-slate-500">Phone</div>
-                      <div className="font-medium text-slate-800">+92 300 1234567</div>
+                      <div className="font-medium text-slate-800">+92 306 1706085</div>
                     </div>
                   </div>
 

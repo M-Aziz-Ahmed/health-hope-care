@@ -6,10 +6,10 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState({
     businessName: 'Health Hope Care',
     email: 'admin@healthhope.com',
-    phone: '+1 (555) 123-4567',
+    phone: '+92 306 1706085',
     address: '123 Healthcare St, Medical City',
     businessHours: '9:00 AM - 6:00 PM',
-    emergencyContact: '+1 (555) 911-0000',
+    emergencyContact: '+92 306 1706085',
     bookingAdvanceTime: '24',
     cancellationPolicy: 'Cancellations must be made 24 hours in advance',
     serviceRadius: '50',
