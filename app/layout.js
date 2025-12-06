@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar';
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import './globals.css';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import Footer from '@/components/Footer';
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Analytics/>
         <SpeedInsights/>
+        <AnalyticsTracker />
           <Navbar />
           {children}
           <Footer />

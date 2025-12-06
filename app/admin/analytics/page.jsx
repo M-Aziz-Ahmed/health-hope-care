@@ -23,6 +23,26 @@ export default function AdminAnalyticsPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    setLoading(true);
+    await fetchStats();
+  };
+
+  const downloadCSV = (filename, rows) => {
+    if (!rows || rows.length === 0) return;
+    const header = Object.keys(rows[0]);
+    const csv = [header.join(',')].concat(rows.map(r => header.map(h => JSON.stringify(r[h] ?? '')).join(','))).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-6 flex items-center justify-center">
@@ -180,6 +200,181 @@ export default function AdminAnalyticsPage() {
                   <div className="text-2xl font-bold text-purple-600">{stats?.totalServices || 0}</div>
                 </div>
                 <BarChart3 className="text-purple-600" size={40} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end mb-4">
+          <button onClick={handleRefresh} className="bg-white border rounded-lg px-3 py-1 text-sm">Refresh Analytics</button>
+        </div>
+
+        {/* Analytics Summary */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h3 className="text-sm text-slate-500">Visits (Last 7 days)</h3>
+            <div className="text-3xl font-bold text-slate-800 mt-3">{stats?.analytics?.visitsLast7Days ?? 0}</div>
+            <div className="text-xs text-slate-500 mt-2">Unique pageviews collected by the tracker</div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h3 className="text-sm text-slate-500">Avg. Session</h3>
+            <div className="text-3xl font-bold text-slate-800 mt-3">{stats?.analytics?.averageSessionMinutes ?? 0} min</div>
+            <div className="text-xs text-slate-500 mt-2">Average session duration across recent sessions</div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h3 className="text-sm text-slate-500">Clicks (Last 7 days)</h3>
+            <div className="text-3xl font-bold text-slate-800 mt-3">{stats?.analytics?.clicks ?? 0}</div>
+            <div className="text-xs text-slate-500 mt-2">Tracked click events from users</div>
+          </div>
+        </div>
+
+        {/* Small trend charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h3 className="text-sm text-slate-500 mb-4">Visits — Last 7 days</h3>
+            {stats?.analytics?.visitsByDay && stats.analytics.visitsByDay.length > 0 ? (
+              (() => {
+                const data = stats.analytics.visitsByDay.map(d => ({ label: d._id, value: d.count }));
+                const max = Math.max(...data.map(d => d.value), 1);
+                return (
+                  <div className="w-full">
+                    <div className="flex items-end gap-2 h-32">
+                      {data.map((d, i) => (
+                        <div key={i} className="flex-1 flex flex-col items-center">
+                          <div className="w-full bg-slate-100 rounded-t-md" style={{ height: `${(d.value / max) * 100}%` }} />
+                          <div className="text-xs text-slate-500 mt-2">{d.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="text-sm text-slate-500">No trend data yet</div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h3 className="text-sm text-slate-500 mb-4">Clicks — Last 7 days</h3>
+            {stats?.analytics?.clicksByDay && stats.analytics.clicksByDay.length > 0 ? (
+              (() => {
+                const data = stats.analytics.clicksByDay.map(d => ({ label: d._id, value: d.count }));
+                const max = Math.max(...data.map(d => d.value), 1);
+                return (
+                  <div className="w-full">
+                    <div className="flex items-end gap-2 h-32">
+                      {data.map((d, i) => (
+                        <div key={i} className="flex-1 flex flex-col items-center">
+                          <div className="w-full bg-slate-100 rounded-t-md" style={{ height: `${(d.value / max) * 100}%` }} />
+                          <div className="text-xs text-slate-500 mt-2">{d.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="text-sm text-slate-500">No click trend data yet</div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Top Pages */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h2 className="text-lg font-bold text-slate-800 mb-4">Top Pages</h2>
+            <div className="space-y-3">
+              {(stats?.analytics?.topPages || []).length === 0 ? (
+                <div className="text-sm text-slate-500">No page data yet</div>
+              ) : (
+                (stats.analytics.topPages || []).map((p, idx) => (
+                  <div key={p.path || idx} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-slate-700 truncate">{p.path || '/'}</div>
+                      <div className="text-xs text-slate-400">{p.visits} visits</div>
+                    </div>
+                    <div className="w-32">
+                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${Math.min(100, Math.round((p.visits / Math.max(1, (stats.analytics.topPages[0]?.visits || 1))) * 100))}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button onClick={() => downloadCSV('top-pages.csv', (stats?.analytics?.topPages || []).map(p => ({ path: p.path, visits: p.visits })))} className="bg-emerald-500 text-white px-3 py-2 rounded-lg text-sm">Export Top Pages CSV</button>
+            </div>
+          </div>
+
+          {/* Countries */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h2 className="text-lg font-bold text-slate-800 mb-4">Top Countries</h2>
+            <div className="space-y-3">
+              {(stats?.analytics?.countries || []).length === 0 ? (
+                <div className="text-sm text-slate-500">No country data yet</div>
+              ) : (
+                (stats.analytics.countries || []).map((c, idx) => (
+                  <div key={c.label || idx} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-slate-700">{c.label}</div>
+                    </div>
+                    <div className="w-32">
+                      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.min(100, Math.round((c.value / Math.max(1, stats.analytics.countries[0]?.value || 1)) * 100))}%` }} />
+                      </div>
+                    </div>
+                    <div className="w-14 text-right text-sm text-slate-600">{c.value}</div>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button onClick={() => downloadCSV('top-countries.csv', (stats?.analytics?.countries || []).map(c => ({ country: c.label, value: c.value })))} className="bg-blue-500 text-white px-3 py-2 rounded-lg text-sm">Export Countries CSV</button>
+            </div>
+          </div>
+
+          {/* OS / Platform breakdown */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <h2 className="text-lg font-bold text-slate-800 mb-4">OS & Platform</h2>
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <div className="text-sm text-slate-600 mb-2">By Platform</div>
+                {(stats?.analytics?.platformBreakdown || []).length === 0 ? (
+                  <div className="text-sm text-slate-500">No platform data</div>
+                ) : (
+                  (stats.analytics.platformBreakdown || []).map((p, idx) => (
+                    <div key={p.label || idx} className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 text-sm text-slate-700">{p.label}</div>
+                      <div className="w-32">
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="bg-indigo-500 h-2 rounded-full" style={{ width: `${Math.min(100, Math.round((p.value / Math.max(1, stats.analytics.platformBreakdown[0]?.value || 1)) * 100))}%` }} />
+                        </div>
+                      </div>
+                      <div className="w-12 text-right text-sm text-slate-600">{p.value}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div>
+                <div className="text-sm text-slate-600 mb-2">By OS</div>
+                {(stats?.analytics?.osBreakdown || []).length === 0 ? (
+                  <div className="text-sm text-slate-500">No OS data</div>
+                ) : (
+                  (stats.analytics.osBreakdown || []).map((o, idx) => (
+                    <div key={o.label || idx} className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 text-sm text-slate-700">{o.label}</div>
+                      <div className="w-32">
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${Math.min(100, Math.round((o.value / Math.max(1, stats.analytics.osBreakdown[0]?.value || 1)) * 100))}%` }} />
+                        </div>
+                      </div>
+                      <div className="w-12 text-right text-sm text-slate-600">{o.value}</div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
