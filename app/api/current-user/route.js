@@ -3,19 +3,25 @@ import { cookies } from 'next/headers';
 import { connectDB } from '@/lib/db';
 import User from '@/models/Users';
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 
 export async function GET() {
   try {
     await connectDB();
 
-    const cookieStore = cookies();
-    const userId = cookieStore.get('userId')?.value;
+    const cookieStore = await cookies();
+    const userId = cookieStore.get?.('userId')?.value;
 
     if (!userId) {
-      return NextResponse.json({ isAdmin: false, error: 'Not logged in' }, { status: 401 });
+      return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 
-  const user = await User.findById(userId).select('name email role phone');
+    // Validate ObjectId format to avoid Mongoose CastErrors
+    if (!mongoose.isValidObjectId(userId)) {
+      return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
+    }
+
+    const user = await User.findById(userId).select('name email role phone');
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -31,7 +37,8 @@ export async function GET() {
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Admin check failed:', error);
-    return NextResponse.json({ isAdmin: false, error: 'Server error' }, { status: 500 });
+    // Log full stack for easier debugging
+    console.error('Admin check failed:', error?.stack || error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

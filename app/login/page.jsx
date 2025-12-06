@@ -11,6 +11,7 @@ export default function AuthPage() {
     try {
       const response = await fetch('/api/loginUser', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, password: formData.password })
       });

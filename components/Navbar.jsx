@@ -157,7 +157,7 @@ export default function Navbar() {
         <div className="hidden md:block">
           <div className="flex items-center gap-4">
             {!isAdmin && <Link href={'/booking'} className='bg-white p-2 rounded-xl px-6 text-blue-400 font-bold hover:bg-blue-500 hover:text-white transition-all duration-300'>Appointment</Link>}
-            {isStaff && <span className="ml-3 text-sm text-white/90">Staff</span>}
+            {isStaff && <Link className="ml-3 text-sm text-white/90" href={'/staff'}>Staff</Link>}
             {isLoggedIn && !isStaff && !isAdmin && (
               <span className="ml-3 text-sm text-white/90">User</span>
             )}

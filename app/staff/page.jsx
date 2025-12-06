@@ -37,7 +37,8 @@ export default function StaffDashboard() {
           credentials: 'include',
         });
         const user = await res.json();
-        if (!user || user.role !== 'staff') {
+        console.log('Current user:', user);
+        if (user.role !== 'staff') {
           router.push('/login');
           return;
         }
