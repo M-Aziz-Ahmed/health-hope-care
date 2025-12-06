@@ -25,7 +25,7 @@ export default function AuthPage() {
 
       localStorage.setItem('currentUser', JSON.stringify(result));
       alert(`✅ Welcome, ${result.role === 'admin' ? 'Admin' : result.name}!`);
-      window.location.href = result.role === 'admin' ? '/admin' : '/';
+      window.location.href = result.role === 'admin' ? '/admin' : result.role === 'staff' ? '/staff' : '/';
 
     } catch (err) {
       setError('❌ Failed to login. Try again later.');

@@ -203,7 +203,23 @@ export default function Navbar() {
               )}
             </div>
             {/* show login/logout on the right for desktop too */}
-            <div className="ml-4">
+            <div className="ml-4 flex items-center gap-3">
+              {/* WhatsApp quick contact (uses phone from Footer: +92 306 1706085 -> wa.me/923061706085) */}
+              {!isStaff && !isAdmin && <Link
+                href="https://wa.me/923061706085?text=Hello%20Health%20Hope%20Care"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Contact us on WhatsApp"
+                aria-label="Contact us on WhatsApp"
+                className=" flex items-center justify-center  text-green-600 rounded-full scale-120 transition-transform"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 animate-bounce" fill="currentColor" aria-hidden>
+                  <path d="M20.52 3.48A11.85 11.85 0 0 0 12.01.1C6.19.1 1.62 4.68 1.62 10.5c0 1.86.48 3.66 1.39 5.26L.1 23.2l7.74-2.31c1.56.86 3.34 1.31 5.17 1.31 5.82 0 10.4-4.57 10.4-10.4 0-2.79-1.09-5.41-3.89-7.3zM12.01 21.6c-1.5 0-2.96-.4-4.22-1.16l-.3-.18-4.6 1.37 1.34-4.22-.2-.34A8.05 8.05 0 0 1 3 10.5c0-4.48 3.64-8.12 8.01-8.12 2.14 0 4.15.83 5.66 2.34 1.5 1.5 2.33 3.52 2.33 5.67 0 4.48-3.64 8.12-8.01 8.12z" />
+                  <path d="M17.57 14.28c-.34-.17-2.02-.99-2.33-1.1-.31-.11-.53-.17-.75.17-.22.34-.86 1.1-1.05 1.32-.19.22-.38.25-.72.09-.34-.17-1.43-.53-2.72-1.67-1.01-.91-1.69-2.03-1.89-2.37-.2-.34-.02-.52.14-.69.14-.14.31-.38.47-.57.15-.19.2-.34.3-.56.1-.22.05-.41-.02-.57-.07-.17-.75-1.8-1.03-2.46-.27-.64-.54-.55-.75-.56-.19-.01-.41-.01-.63-.01-.22 0-.57.08-.87.41-.3.33-1.15 1.12-1.15 2.72 0 1.59 1.18 3.13 1.34 3.35.17.22 2.33 3.7 5.65 5.2 3.32 1.5 3.32 1.0 3.92.94.6-.07 1.95-.8 2.23-1.57.28-.77.28-1.43.2-1.57-.08-.14-.31-.22-.65-.39z" fill="#fff"/>
+                </svg>
+              </Link>}
+              
+
               {isLoggedIn ? (
                 <button onClick={handleLogout} className="bg-white text-blue-600 px-3 py-1 rounded-lg">Logout</button>
               ) : (
