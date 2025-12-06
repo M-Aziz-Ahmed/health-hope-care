@@ -50,44 +50,53 @@ export default function UserDashboard() {
   // Socket.IO for incoming calls
   useEffect(() => {
     if (!userInfo?._id) return;
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    if (!socketUrl) return;
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
-    const socketInstance = io(socketUrl);
-    
-    socketInstance.on('connect', () => {
-      console.log('User socket connected:', socketInstance.id);
-      socketInstance.emit('join', userInfo._id);
-    });
-
-    socketInstance.on('incoming-call', async ({ from, offer, callType, callerName, booking: bookingId }) => {
-      console.log('Incoming call from:', callerName);
-      
-      // Fetch the booking details
+    let socketInstance;
+    (async () => {
       try {
-        const res = await fetch('/api/fetchBooking');
-        const allBookings = await res.json();
-        const booking = allBookings.find(b => b._id === bookingId);
-        
-        if (booking) {
-          setIncomingCall({ from, offer, callType, callerName, booking });
-        }
-      } catch (error) {
-        console.error('Error fetching booking for call:', error);
+        const { io } = await import('socket.io-client');
+        socketInstance = io(socketUrl);
+
+        socketInstance.on('connect', () => {
+          console.log('User socket connected:', socketInstance.id);
+          socketInstance.emit('join', userInfo._id);
+        });
+
+        socketInstance.on('incoming-call', async ({ from, offer, callType, callerName, booking: bookingId }) => {
+          console.log('Incoming call from:', callerName);
+          
+          // Fetch the booking details
+          try {
+            const res = await fetch('/api/fetchBooking');
+            const allBookings = await res.json();
+            const booking = allBookings.find(b => b._id === bookingId);
+            
+            if (booking) {
+              setIncomingCall({ from, offer, callType, callerName, booking });
+            }
+          } catch (error) {
+            console.error('Error fetching booking for call:', error);
+          }
+        });
+
+        socketInstance.on('call-ended', () => {
+          setIncomingCall(null);
+        });
+
+        socketInstance.on('call-rejected', () => {
+          setIncomingCall(null);
+        });
+
+        setSocket(socketInstance);
+      } catch (err) {
+        console.warn('Socket client not initialized:', err);
       }
-    });
-
-    socketInstance.on('call-ended', () => {
-      setIncomingCall(null);
-    });
-
-    socketInstance.on('call-rejected', () => {
-      setIncomingCall(null);
-    });
-
-    setSocket(socketInstance);
+    })();
 
     return () => {
-      socketInstance.disconnect();
+      try { socketInstance?.disconnect(); } catch (e) {}
     };
   }, [userInfo?._id]);
 

@@ -656,16 +656,18 @@ export default function BookingPage() {
                               <MessageCircle size={18} />
                               Chat
                             </button>
-                            <button
-                              onClick={() => {
-                                setSelectedBookingForChat(booking);
-                                setShowCall(true);
-                              }}
-                              className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-medium shadow-sm hover:shadow-md"
-                            >
-                              <Phone size={18} />
-                              Call
-                            </button>
+                            {(currentUser?.role === 'admin' || currentUser?.role === 'staff') && (
+                              <button
+                                onClick={() => {
+                                  setSelectedBookingForChat(booking);
+                                  setShowCall(true);
+                                }}
+                                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-medium shadow-sm hover:shadow-md"
+                              >
+                                <Phone size={18} />
+                                Call
+                              </button>
+                            )}
                             <button
                               onClick={() => handleTrackStaff(booking)}
                               className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium shadow-sm hover:shadow-md"
@@ -777,7 +779,7 @@ export default function BookingPage() {
     )}
 
     {/* Video Call */}
-    {showCall && selectedBookingForChat && (
+    {(showCall && selectedBookingForChat && (currentUser?.role === 'admin' || currentUser?.role === 'staff')) && (
       <VideoCall
         booking={selectedBookingForChat}
         currentUser={currentUser}

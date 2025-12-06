@@ -30,6 +30,37 @@ export default function Navbar() {
     }
   }, []);
 
+  // Keep navbar in sync when localStorage changes (login/logout, switch accounts)
+  useEffect(() => {
+    function updateUserFromStorage() {
+      try {
+        const raw = localStorage.getItem('currentUser');
+        const user = raw ? JSON.parse(raw) : null;
+        if (user) {
+          setIsLoggedIn(true);
+          setIsAdmin(user.role === 'admin' || user.role === 'owner');
+          setIsStaff(user.role === 'staff');
+        } else {
+          setIsLoggedIn(false);
+          setIsAdmin(false);
+          setIsStaff(false);
+        }
+      } catch (err) {
+        setIsLoggedIn(false);
+        setIsAdmin(false);
+        setIsStaff(false);
+      }
+    }
+
+    updateUserFromStorage();
+    window.addEventListener('storage', updateUserFromStorage);
+    window.addEventListener('focus', updateUserFromStorage);
+    return () => {
+      window.removeEventListener('storage', updateUserFromStorage);
+      window.removeEventListener('focus', updateUserFromStorage);
+    };
+  }, []);
+
   // fetch notifications for logged-in users
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -122,26 +153,14 @@ export default function Navbar() {
             </li>
           )}
 
-          {/* <li>
-            {isLoggedIn ? (
-              <button
-                onClick={handleLogout}
-                className="hover:text-sky-200 transition duration-200"
-              >
-                Logout
-              </button>
-            ) : (
-              <Link href="/login" className="hover:text-sky-200 transition">
-                Login
-              </Link>
-            )}
-          </li> */}
-
         </ul>
         <div className="hidden md:block">
           <div className="flex items-center gap-4">
-            <Link href={'/booking'} className='bg-white p-2 rounded-xl px-6 text-blue-400 font-bold hover:bg-blue-500 hover:text-white transition-all duration-300'>Appointment</Link>
+            {!isAdmin && <Link href={'/booking'} className='bg-white p-2 rounded-xl px-6 text-blue-400 font-bold hover:bg-blue-500 hover:text-white transition-all duration-300'>Appointment</Link>}
             {isStaff && <span className="ml-3 text-sm text-white/90">Staff</span>}
+            {isLoggedIn && !isStaff && !isAdmin && (
+              <span className="ml-3 text-sm text-white/90">User</span>
+            )}
 
             {/* Notification bell */}
             <div className="relative" ref={notesRef}>
@@ -181,6 +200,14 @@ export default function Navbar() {
                     <Link href="/notifications" className="text-sm text-blue-600">View all</Link>
                   </div>
                 </div>
+              )}
+            </div>
+            {/* show login/logout on the right for desktop too */}
+            <div className="ml-4">
+              {isLoggedIn ? (
+                <button onClick={handleLogout} className="bg-white text-blue-600 px-3 py-1 rounded-lg">Logout</button>
+              ) : (
+                <Link href="/login" className="bg-white text-blue-600 px-3 py-1 rounded-lg">Login</Link>
               )}
             </div>
           </div>

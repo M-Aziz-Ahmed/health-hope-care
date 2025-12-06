@@ -1,6 +1,5 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
 
 const SocketContext = createContext(null);
 
@@ -8,32 +7,43 @@ export const useSocket = () => {
   return useContext(SocketContext);
 };
 
+// SocketProvider: only creates a socket when NEXT_PUBLIC_SOCKET_URL is configured.
+// This avoids creating socket connections by default on Vercel. If you want
+// real-time features, set NEXT_PUBLIC_SOCKET_URL to your external socket server.
 export const SocketProvider = ({ children, userId }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    if (!userId || !socketUrl) return;
 
-    const socketInstance = io({
-      path: '/socket.io',
-    });
+    // Dynamically import socket.io-client to avoid loading it when not used
+    let socketInstance;
+    (async () => {
+      try {
+        const { io } = await import('socket.io-client');
+        socketInstance = io(socketUrl, { path: '/socket.io' });
 
-    socketInstance.on('connect', () => {
-      console.log('Socket connected:', socketInstance.id);
-      setIsConnected(true);
-      socketInstance.emit('join', userId);
-    });
+        socketInstance.on('connect', () => {
+          console.log('Socket connected:', socketInstance.id);
+          setIsConnected(true);
+          socketInstance.emit('join', userId);
+        });
 
-    socketInstance.on('disconnect', () => {
-      console.log('Socket disconnected');
-      setIsConnected(false);
-    });
+        socketInstance.on('disconnect', () => {
+          console.log('Socket disconnected');
+          setIsConnected(false);
+        });
 
-    setSocket(socketInstance);
+        setSocket(socketInstance);
+      } catch (err) {
+        console.warn('Socket.IO client not initialized:', err);
+      }
+    })();
 
     return () => {
-      socketInstance.disconnect();
+      try { socketInstance?.disconnect(); } catch (e) {}
     };
   }, [userId]);
 

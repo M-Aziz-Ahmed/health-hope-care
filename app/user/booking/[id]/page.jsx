@@ -40,29 +40,38 @@ export default function BookingTrackingPage() {
   // Socket.IO for real-time staff location updates
   useEffect(() => {
     if (!booking?.assignedStaff) return;
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    if (!socketUrl) return;
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
-    const socketInstance = io(socketUrl);
+    let socketInstance;
+    (async () => {
+      try {
+        const { io } = await import('socket.io-client');
+        socketInstance = io(socketUrl);
 
-    socketInstance.on('connect', () => {
-      console.log('Connected to location tracking');
-      // Join room for this booking to receive location updates
-      socketInstance.emit('join-booking', params.id);
-    });
+        socketInstance.on('connect', () => {
+          console.log('Connected to location tracking');
+          // Join room for this booking to receive location updates
+          socketInstance.emit('join-booking', params.id);
+        });
 
-    // Listen for staff location updates
-    socketInstance.on('staff-location-update', ({ location, estimatedTime }) => {
-      console.log('Received staff location:', location);
-      setStaffLocation(location);
-      if (estimatedTime) {
-        setEstimatedTime(estimatedTime);
+        // Listen for staff location updates
+        socketInstance.on('staff-location-update', ({ location, estimatedTime }) => {
+          console.log('Received staff location:', location);
+          setStaffLocation(location);
+          if (estimatedTime) {
+            setEstimatedTime(estimatedTime);
+          }
+        });
+
+        setSocket(socketInstance);
+      } catch (err) {
+        console.warn('Socket client not initialized:', err);
       }
-    });
-
-    setSocket(socketInstance);
+    })();
 
     return () => {
-      socketInstance.disconnect();
+      try { socketInstance?.disconnect(); } catch (e) {}
     };
   }, [booking?.assignedStaff, params.id]);
 

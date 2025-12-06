@@ -37,7 +37,7 @@ export default function Analytics() {
             <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="text-blue-600" size={32} />
             </div>
-            <div className="text-4xl font-bold text-gray-800 mb-2">{stats.totalUsers}+</div>
+            <div className="text-4xl font-bold text-gray-800 mb-2">{stats.totalUsers > 80 ?stats.totalUsers:'80'}+</div>
             <div className="text-gray-600">Happy Patients</div>
           </div>
 
@@ -45,7 +45,7 @@ export default function Analytics() {
             <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="text-emerald-600" size={32} />
             </div>
-            <div className="text-4xl font-bold text-gray-800 mb-2">{stats.totalBookings}+</div>
+            <div className="text-4xl font-bold text-gray-800 mb-2">{stats.totalBookings > 100?stats.totalBookings:'100'}+</div>
             <div className="text-gray-600">Services Delivered</div>
           </div>
 
@@ -65,7 +65,7 @@ export default function Analytics() {
             <div className="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <TrendingUp className="text-yellow-600" size={32} />
             </div>
-            <div className="text-4xl font-bold text-gray-800 mb-2">{stats.staffCount}+</div>
+            <div className="text-4xl font-bold text-gray-800 mb-2">{stats.staffCount > 50?stats.staffCount:'50'}+</div>
             <div className="text-gray-600">Expert Staff</div>
           </div>
         </div>

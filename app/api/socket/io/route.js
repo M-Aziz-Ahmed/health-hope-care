@@ -1,64 +1,13 @@
-import { Server } from 'socket.io';
+// Socket.IO handlers removed for serverless deployments.
+// Deploy a separate socket server (see `socket-server/`) and set
+// `NEXT_PUBLIC_SOCKET_URL` in your environment to connect clients.
 
-const ioHandler = (req, res) => {
-  if (!res.socket.server.io) {
-    console.log('Setting up Socket.IO');
-    const io = new Server(res.socket.server);
+export async function GET() {
+  return new Response('Socket.IO handlers disabled in this deployment. Use a separate socket server.', { status: 410 });
+}
 
-    io.on('connection', (socket) => {
-      console.log('User connected:', socket.id);
+export async function POST() {
+  return new Response('Socket.IO handlers disabled in this deployment. Use a separate socket server.', { status: 410 });
+}
 
-      socket.on('join', (userId) => {
-        socket.userId = userId;
-        socket.join(userId);
-        console.log(`User ${userId} joined with socket ${socket.id}`);
-      });
-
-      socket.on('call-user', ({ to, from, offer, callType, callerName, booking }) => {
-        console.log(`Call from ${from} (${callerName}) to ${to}, type: ${callType}`);
-        io.to(to).emit('incoming-call', {
-          from,
-          offer,
-          callType,
-          callerName,
-          booking
-        });
-      });
-
-      socket.on('answer-call', ({ to, answer }) => {
-        console.log(`Call answered, sending to ${to}`);
-        io.to(to).emit('call-answered', { answer });
-      });
-
-      socket.on('reject-call', ({ to }) => {
-        console.log(`Call rejected, notifying ${to}`);
-        io.to(to).emit('call-rejected');
-      });
-
-      socket.on('end-call', ({ to }) => {
-        console.log(`Call ended, notifying ${to}`);
-        io.to(to).emit('call-ended');
-      });
-
-      socket.on('ice-candidate', ({ to, candidate }) => {
-        io.to(to).emit('ice-candidate', { candidate });
-      });
-
-      socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-      });
-    });
-
-    res.socket.server.io = io;
-  }
-  res.end();
-};
-
-export const GET = ioHandler;
-export const POST = ioHandler;
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const config = { api: { bodyParser: false } };
