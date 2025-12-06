@@ -11,8 +11,11 @@ export async function GET() {
 
     const cookieStore = await cookies();
     const userId = cookieStore.get?.('userId')?.value;
+    
+    console.log('Current user check - Cookie userId:', userId);
 
     if (!userId) {
+      console.log('Current user check - No userId cookie found');
       return NextResponse.json({ error: 'Not logged in' }, { status: 401 });
     }
 

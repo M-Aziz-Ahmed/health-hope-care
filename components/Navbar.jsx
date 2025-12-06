@@ -15,6 +15,7 @@ export default function Navbar() {
   const notesRef = useRef();
 
   useEffect(() => {
+    // First check localStorage
     let user = null;
     try {
       const raw = localStorage.getItem('currentUser');
@@ -23,16 +24,37 @@ export default function Navbar() {
       console.warn('Invalid currentUser in localStorage', err);
       user = null;
     }
+    
     if (user) {
       setIsLoggedIn(true);
       setIsAdmin(user.role === 'admin' || user.role === 'owner');
       setIsStaff(user.role === 'staff');
+    } else {
+      // If no localStorage, check if user is logged in via cookie (Google OAuth)
+      fetch('/api/current-user')
+        .then(res => {
+          if (res.ok) return res.json();
+          throw new Error('Not logged in');
+        })
+        .then(userData => {
+          // Store in localStorage for future use
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          setIsLoggedIn(true);
+          setIsAdmin(userData.role === 'admin' || userData.role === 'owner');
+          setIsStaff(userData.role === 'staff');
+        })
+        .catch(() => {
+          // Not logged in
+          setIsLoggedIn(false);
+          setIsAdmin(false);
+          setIsStaff(false);
+        });
     }
   }, []);
 
   // Keep navbar in sync when localStorage changes (login/logout, switch accounts)
   useEffect(() => {
-    function updateUserFromStorage() {
+    async function updateUserFromStorage() {
       try {
         const raw = localStorage.getItem('currentUser');
         const user = raw ? JSON.parse(raw) : null;
@@ -41,9 +63,25 @@ export default function Navbar() {
           setIsAdmin(user.role === 'admin' || user.role === 'owner');
           setIsStaff(user.role === 'staff');
         } else {
-          setIsLoggedIn(false);
-          setIsAdmin(false);
-          setIsStaff(false);
+          // Check API if no localStorage
+          try {
+            const res = await fetch('/api/current-user');
+            if (res.ok) {
+              const userData = await res.json();
+              localStorage.setItem('currentUser', JSON.stringify(userData));
+              setIsLoggedIn(true);
+              setIsAdmin(userData.role === 'admin' || userData.role === 'owner');
+              setIsStaff(userData.role === 'staff');
+            } else {
+              setIsLoggedIn(false);
+              setIsAdmin(false);
+              setIsStaff(false);
+            }
+          } catch {
+            setIsLoggedIn(false);
+            setIsAdmin(false);
+            setIsStaff(false);
+          }
         }
       } catch (err) {
         setIsLoggedIn(false);
@@ -97,10 +135,19 @@ export default function Navbar() {
     return () => document.removeEventListener('click', onDoc);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('currentUser');
+    
+    // Clear the cookie by calling logout API
+    try {
+      await fetch('/api/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout API failed', err);
+    }
+    
     setIsLoggedIn(false);
     setIsAdmin(false);
+    setIsStaff(false);
     window.location.href = '/login';
   };
 
