@@ -47,14 +47,41 @@
 
    async function sendEvent(payload) {
      try {
-       const body = {
-         ...payload,
-         url: typeof window !== 'undefined' ? window.location.href : '',
-         path: typeof window !== 'undefined' ? window.location.pathname : '',
-         title: typeof document !== 'undefined' ? document.title : '',
-         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-         platform: typeof navigator !== 'undefined' ? (navigator.platform || '') : ''
-       };
+      // gather referrer, utm source/medium and basic device/os info
+      const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
+      const params = url ? Object.fromEntries(url.searchParams.entries()) : {};
+      const referrer = typeof document !== 'undefined' ? document.referrer || '' : '';
+      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+      const platformStr = typeof navigator !== 'undefined' ? (navigator.platform || '') : '';
+
+      const os = (() => {
+        const ua = userAgent.toLowerCase();
+        if (ua.includes('windows')) return 'Windows';
+        if (ua.includes('mac os') || ua.includes('macintosh')) return 'macOS';
+        if (ua.includes('android')) return 'Android';
+        if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod')) return 'iOS';
+        if (ua.includes('linux')) return 'Linux';
+        return platformStr || 'Unknown';
+      })();
+
+      const deviceType = /mobi|android|iphone|ipad|ipod/i.test(userAgent) ? 'mobile' : 'desktop';
+
+      const source = params.utm_source || (referrer ? (new URL(referrer).hostname.replace('www.', '')) : 'direct');
+      const medium = params.utm_medium || (params.utm_source ? 'utm' : (referrer ? 'referrer' : 'direct'));
+
+      const body = {
+        ...payload,
+        url: url ? url.href : '',
+        path: typeof window !== 'undefined' ? window.location.pathname : '',
+        title: typeof document !== 'undefined' ? document.title : '',
+        userAgent,
+        platform: platformStr,
+        referrer,
+        source,
+        medium,
+        os,
+        deviceType
+      };
        await fetch('/api/analytics/collect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
      } catch (e) {
        // ignore

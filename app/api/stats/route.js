@@ -94,9 +94,21 @@ export async function GET() {
         { $limit: 10 }
       ]);
 
-      // os/platform breakdown (from platform/userAgent)
+      // os breakdown (from parsed os field) and source/platform breakdown (from source/referrer)
       const osAgg = await Analytics.aggregate([
-        { $group: { _id: '$platform', count: { $sum: 1 } } },
+        { $group: { _id: '$os', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+      ]);
+
+      const sourceAgg = await Analytics.aggregate([
+        { $group: { _id: '$source', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+      ]);
+
+      const deviceAgg = await Analytics.aggregate([
+        { $group: { _id: '$deviceType', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 }
       ]);
@@ -105,12 +117,13 @@ export async function GET() {
         visitsLast7Days: visits,
         averageSessionMinutes: avgMinutes,
         clicks,
-        visitsByDay: visitsByDay.map(v => ({ day: v._id, visits: v.count })),
-        clicksByDay: clicksByDay.map(c => ({ day: c._id, clicks: c.count })),
+        visitsByDay: visitsByDay.map(v => ({ _id: v._id, count: v.count })),
+        clicksByDay: clicksByDay.map(c => ({ _id: c._id, count: c.count })),
         countries: countriesAgg.map(c => ({ label: c._id || 'Unknown', value: c.count })),
         topPages: pagesAgg.map(p => ({ path: p._id || '/', visits: p.count })),
         osBreakdown: osAgg.map(o => ({ label: o._id || 'Unknown', value: o.count })),
-        platformBreakdown: osAgg.map(o => ({ label: o._id || 'Unknown', value: o.count }))
+        platformBreakdown: sourceAgg.map(s => ({ label: s._id || 'direct', value: s.count })),
+        deviceBreakdown: deviceAgg.map(d => ({ label: d._id || 'unknown', value: d.count }))
       };
     } catch (e) {
       // Analytics model may not exist or DB may be empty — ignore

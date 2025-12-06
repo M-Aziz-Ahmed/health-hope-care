@@ -11,6 +11,11 @@ const AnalyticsSchema = new mongoose.Schema({
   platform: { type: String },
   ip: { type: String },
   country: { type: String },
+  referrer: { type: String },
+  source: { type: String },
+  medium: { type: String },
+  os: { type: String },
+  deviceType: { type: String }
 }, { timestamps: true });
 
 export default mongoose.models.Analytics || mongoose.model('Analytics', AnalyticsSchema);
