@@ -46,6 +46,27 @@ export default function RootLayout({ children }) {
         <Analytics/>
         <SpeedInsights/>
         <AnalyticsTracker />
+        {/* LocalBusiness structured data for SEO (replace values if needed) */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "HomeAndConstructionBusiness",
+          "name": "Health Hope Care",
+          "description": "Compassionate in-home nursing, therapy and caregiver services in Lahore. Book trusted local professionals for home visits and ongoing care.",
+          "url": (process.env.NEXT_PUBLIC_BASE_URL || 'https://www.healthhopecare.com'),
+          "telephone": "+92 306 1706085",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "1st floor, Akbar Chowk, Umer Plaza, College Road, Township",
+            "addressLocality": "Lahore",
+            "addressRegion": "Punjab",
+            "postalCode": "54000",
+            "addressCountry": "PK"
+          },
+          "areaServed": "Lahore",
+          "openingHours": "Mo-Su 00:00-23:59",
+          "sameAs": [],
+          "image": (process.env.NEXT_PUBLIC_BASE_URL || 'https://www.healthhopecare.com') + '/og-image.png'
+        }) }} />
           <Navbar />
           {children}
           <Footer />
