@@ -36,12 +36,15 @@ export const metadata = {
     description: 'Compassionate in-home nursing & caregiver services.',
     images: ['https://www.healthhopecare.com/_next/image?url=%2Flogo.png'],
   },
-  metadataBase: new URL('https://your-production-domain.com')
+  metadataBase: new URL('https://www.healthhopecare.com')
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <meta name="google-site-verification" content="cijNQwF8Jjqne8MIeez6Fai9Buj8ntK_xoqlhSNsam0" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Analytics/>
         <SpeedInsights/>
