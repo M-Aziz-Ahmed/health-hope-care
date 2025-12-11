@@ -395,7 +395,7 @@ export default function BookingPage() {
                     <option value="">-- Choose a Service --</option>
                     {servicesList.map((service, idx) => (
                       <option key={idx} value={service.name}>
-                        {service.icon} {service.name} - {service.price}
+                        {service.icon} {service.name}
                       </option>
                     ))}
                   </select>
